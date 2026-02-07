@@ -5,98 +5,98 @@ import { useMemo, useState } from "react";
 const mockActivities = [
   {
     id: "act_001",
-    timestamp: "2026-02-07T14:12:08.000Z",
-    actionType: "research",
-    description: "Mapped dependency graph for the knowledge sync pipeline.",
-    project: "Atlas",
+    timestamp: "2026-02-06T18:10:00.000Z",
+    actionType: "deploy",
+    description: "Deployed Mission Control dashboard to Railway.",
+    project: "Mission Control",
     status: "success",
   },
   {
     id: "act_002",
-    timestamp: "2026-02-07T13:48:52.000Z",
-    actionType: "message",
-    description: "Sent stakeholder summary with prioritized blockers.",
-    project: "Mission Control",
+    timestamp: "2026-02-06T18:02:00.000Z",
+    actionType: "code",
+    description: "Imported 4.89M crash records to Fleet Intel database.",
+    project: "Fleet Intel",
     status: "success",
   },
   {
     id: "act_003",
-    timestamp: "2026-02-07T13:20:11.000Z",
-    actionType: "code",
-    description: "Refactored telemetry ingestion to stream in batches.",
-    project: "Nova",
-    status: "pending",
+    timestamp: "2026-02-06T16:51:00.000Z",
+    actionType: "research",
+    description: "Audited 4 ClawHub skills for security concerns.",
+    project: "OpenClaw Config",
+    status: "success",
   },
   {
     id: "act_004",
-    timestamp: "2026-02-07T12:58:29.000Z",
-    actionType: "file",
-    description: "Edited roadmap spec with latest operating assumptions.",
-    project: "Mission Control",
+    timestamp: "2026-02-06T15:10:00.000Z",
+    actionType: "deploy",
+    description: "Fixed threadchess Railway - copied Battle Dinghy credentials.",
+    project: "threadchess",
     status: "success",
   },
   {
     id: "act_005",
-    timestamp: "2026-02-07T12:31:05.000Z",
-    actionType: "deploy",
-    description: "Deployed nightly build to staging cluster.",
-    project: "Aurora",
+    timestamp: "2026-02-06T14:46:00.000Z",
+    actionType: "code",
+    description: "Installed skills: project-management, self-reflection, sophie-optimizer.",
+    project: "OpenClaw Config",
     status: "success",
   },
   {
     id: "act_006",
-    timestamp: "2026-02-07T11:55:41.000Z",
+    timestamp: "2026-02-06T14:30:00.000Z",
     actionType: "research",
-    description: "Benchmarked new vector index configuration.",
-    project: "Nova",
-    status: "failed",
+    description: "Researched Chrome extension architecture for JIT parts lookup.",
+    project: "JIT Chrome Extension",
+    status: "success",
   },
   {
     id: "act_007",
-    timestamp: "2026-02-07T11:22:33.000Z",
-    actionType: "code",
-    description: "Implemented cache warm-up strategy for embeddings.",
-    project: "Atlas",
+    timestamp: "2026-02-06T12:00:00.000Z",
+    actionType: "file",
+    description: "Consolidated X_Simulator to Next.js only, removed Flask UI.",
+    project: "X_Simulator",
     status: "success",
   },
   {
     id: "act_008",
-    timestamp: "2026-02-07T10:44:09.000Z",
-    actionType: "message",
-    description: "Flagged scheduling drift in heartbeat tasks.",
-    project: "Mission Control",
-    status: "pending",
+    timestamp: "2026-02-06T08:00:00.000Z",
+    actionType: "file",
+    description: "Created PIPELINE.md with 53 project items.",
+    project: "Workspace",
+    status: "success",
   },
   {
     id: "act_009",
-    timestamp: "2026-02-07T10:15:54.000Z",
-    actionType: "file",
-    description: "Captured incident log for overnight alert burst.",
-    project: "Aurora",
+    timestamp: "2026-02-05T21:30:00.000Z",
+    actionType: "code",
+    description: "Imported 4.38M FMCSA carriers to local SQLite database.",
+    project: "Fleet Intel",
     status: "success",
   },
   {
     id: "act_010",
-    timestamp: "2026-02-07T09:36:20.000Z",
-    actionType: "research",
-    description: "Reviewed market signals for adaptive scheduling.",
-    project: "Vanguard",
+    timestamp: "2026-02-05T20:00:00.000Z",
+    actionType: "deploy",
+    description: "Integrated ThreadChess game engine into X_Simulator.",
+    project: "X_Simulator",
     status: "success",
   },
   {
     id: "act_011",
-    timestamp: "2026-02-07T09:05:07.000Z",
+    timestamp: "2026-02-04T15:00:00.000Z",
     actionType: "deploy",
-    description: "Hotfixed inference timeout thresholds.",
-    project: "Nova",
+    description: "Battle Dinghy live on Twitter @BattleDinghy.",
+    project: "Battle Dinghy",
     status: "success",
   },
   {
     id: "act_012",
-    timestamp: "2026-02-07T08:32:19.000Z",
-    actionType: "message",
-    description: "Notified ops team about new alert routing.",
-    project: "Atlas",
+    timestamp: "2026-02-04T12:00:00.000Z",
+    actionType: "research",
+    description: "Completed Polymarket strategy analysis document.",
+    project: "Polymarket Research",
     status: "success",
   },
 ];
@@ -317,37 +317,34 @@ export default function ActivityFeedPage() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
+                      <span className="rounded-lg bg-indigo-500/20 border border-indigo-400/40 px-3 py-1 text-sm font-medium text-indigo-300">
+                        {activity.project}
+                      </span>
                       <span
-                        className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.2em] ${
+                        className={`rounded-full border px-2 py-0.5 text-xs uppercase tracking-[0.15em] ${
                           statusStyles[activity.status]
                         }`}
                       >
                         {activity.status}
                       </span>
-                      <span className="text-xs text-slate-400 text-mono">
-                        {new Date(activity.timestamp).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
                     </div>
                     <span className="text-xs text-slate-400">
-                      {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                      {new Date(activity.timestamp).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      · {new Date(activity.timestamp).toLocaleDateString("en-US", {
                         month: "short",
                         day: "2-digit",
-                        year: "numeric",
                       })}
                     </span>
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
+                  <p className="mt-3 text-sm text-slate-200">{activity.description}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="rounded-full bg-slate-800/60 px-2 py-0.5 text-xs text-slate-400">
                       {activity.actionType}
                     </span>
-                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
-                      {activity.project}
-                    </span>
                   </div>
-                  <p className="mt-3 text-sm text-slate-200">{activity.description}</p>
                 </article>
               ))}
             </div>
