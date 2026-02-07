@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-midnight-900 text-slate-100 antialiased;
+  font-family: var(--font-space), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(84, 240, 193, 0.25);
+}
+
+.glass-panel {
+  background: linear-gradient(135deg, rgba(23, 32, 51, 0.85), rgba(12, 18, 31, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 20px 50px rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(14px);
+}
+
+.text-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

@@ -1,0 +1,369 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+const mockActivities = [
+  {
+    id: "act_001",
+    timestamp: "2026-02-07T14:12:08.000Z",
+    actionType: "research",
+    description: "Mapped dependency graph for the knowledge sync pipeline.",
+    project: "Atlas",
+    status: "success",
+  },
+  {
+    id: "act_002",
+    timestamp: "2026-02-07T13:48:52.000Z",
+    actionType: "message",
+    description: "Sent stakeholder summary with prioritized blockers.",
+    project: "Mission Control",
+    status: "success",
+  },
+  {
+    id: "act_003",
+    timestamp: "2026-02-07T13:20:11.000Z",
+    actionType: "code",
+    description: "Refactored telemetry ingestion to stream in batches.",
+    project: "Nova",
+    status: "pending",
+  },
+  {
+    id: "act_004",
+    timestamp: "2026-02-07T12:58:29.000Z",
+    actionType: "file",
+    description: "Edited roadmap spec with latest operating assumptions.",
+    project: "Mission Control",
+    status: "success",
+  },
+  {
+    id: "act_005",
+    timestamp: "2026-02-07T12:31:05.000Z",
+    actionType: "deploy",
+    description: "Deployed nightly build to staging cluster.",
+    project: "Aurora",
+    status: "success",
+  },
+  {
+    id: "act_006",
+    timestamp: "2026-02-07T11:55:41.000Z",
+    actionType: "research",
+    description: "Benchmarked new vector index configuration.",
+    project: "Nova",
+    status: "failed",
+  },
+  {
+    id: "act_007",
+    timestamp: "2026-02-07T11:22:33.000Z",
+    actionType: "code",
+    description: "Implemented cache warm-up strategy for embeddings.",
+    project: "Atlas",
+    status: "success",
+  },
+  {
+    id: "act_008",
+    timestamp: "2026-02-07T10:44:09.000Z",
+    actionType: "message",
+    description: "Flagged scheduling drift in heartbeat tasks.",
+    project: "Mission Control",
+    status: "pending",
+  },
+  {
+    id: "act_009",
+    timestamp: "2026-02-07T10:15:54.000Z",
+    actionType: "file",
+    description: "Captured incident log for overnight alert burst.",
+    project: "Aurora",
+    status: "success",
+  },
+  {
+    id: "act_010",
+    timestamp: "2026-02-07T09:36:20.000Z",
+    actionType: "research",
+    description: "Reviewed market signals for adaptive scheduling.",
+    project: "Vanguard",
+    status: "success",
+  },
+  {
+    id: "act_011",
+    timestamp: "2026-02-07T09:05:07.000Z",
+    actionType: "deploy",
+    description: "Hotfixed inference timeout thresholds.",
+    project: "Nova",
+    status: "success",
+  },
+  {
+    id: "act_012",
+    timestamp: "2026-02-07T08:32:19.000Z",
+    actionType: "message",
+    description: "Notified ops team about new alert routing.",
+    project: "Atlas",
+    status: "success",
+  },
+];
+
+const actionTypes = ["all", "research", "code", "message", "file", "deploy"] as const;
+const statuses = ["all", "success", "pending", "failed"] as const;
+
+const statusStyles: Record<string, string> = {
+  success: "bg-aurora-500/15 text-aurora-400 border-aurora-500/30",
+  pending: "bg-comet-500/15 text-comet-400 border-comet-500/30",
+  failed: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+};
+
+export default function ActivityFeedPage() {
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    actionType: "all",
+    project: "all",
+    status: "all",
+  });
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const projects = useMemo(() => {
+    const unique = new Set(mockActivities.map((activity) => activity.project));
+    return ["all", ...Array.from(unique).sort()];
+  }, []);
+
+  const filtered = useMemo(() => {
+    return mockActivities.filter((activity) => {
+      if (filters.actionType !== "all" && activity.actionType !== filters.actionType) {
+        return false;
+      }
+      if (filters.project !== "all" && activity.project !== filters.project) {
+        return false;
+      }
+      if (filters.status !== "all" && activity.status !== filters.status) {
+        return false;
+      }
+      if (filters.startDate) {
+        const start = new Date(filters.startDate).getTime();
+        if (activity.timestamp && new Date(activity.timestamp).getTime() < start) {
+          return false;
+        }
+      }
+      if (filters.endDate) {
+        const end = new Date(filters.endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
+        if (activity.timestamp && new Date(activity.timestamp).getTime() > end) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [filters]);
+
+  const visibleActivities = filtered.slice(0, visibleCount);
+
+  const successRate = Math.round(
+    (filtered.filter((activity) => activity.status === "success").length /
+      Math.max(filtered.length, 1)) *
+      100,
+  );
+
+  return (
+    <main className="relative min-h-screen overflow-hidden">
+      <div className="absolute inset-0 bg-grid-fade" />
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
+        <header className="flex flex-col gap-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm uppercase tracking-[0.25em] text-aurora-400/80">
+                Mission Control
+              </p>
+              <h1 className="mt-2 text-4xl font-semibold text-white">
+                Activity Feed
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm text-slate-300">
+                Live telemetry from Barry&apos;s sessions. Track intent, context, and delivery status in
+                one continuous operational view.
+              </p>
+            </div>
+            <div className="glass-panel flex items-center gap-3 rounded-full px-4 py-2 text-xs text-slate-200">
+              <span className="h-2 w-2 rounded-full bg-aurora-500 shadow-[0_0_12px_rgba(84,240,193,0.8)]" />
+              Real-time stream connected
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="glass-panel rounded-2xl px-5 py-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Events</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{filtered.length}</p>
+              <p className="mt-2 text-xs text-slate-400">Showing filtered results</p>
+            </div>
+            <div className="glass-panel rounded-2xl px-5 py-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Success Rate</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{successRate}%</p>
+              <p className="mt-2 text-xs text-slate-400">Across selected activities</p>
+            </div>
+            <div className="glass-panel rounded-2xl px-5 py-4">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active Projects</p>
+              <p className="mt-3 text-3xl font-semibold text-white">{projects.length - 1}</p>
+              <p className="mt-2 text-xs text-slate-400">Distinct workstreams</p>
+            </div>
+          </div>
+        </header>
+
+        <section className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.4fr]">
+          <div className="glass-panel rounded-3xl p-6">
+            <h2 className="text-lg font-semibold text-white">Filters</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Slice by timeframe, signal type, project, and current status.
+            </p>
+
+            <div className="mt-6 grid gap-4 text-sm">
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Start Date</span>
+                <input
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, startDate: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-slate-100 outline-none transition focus:border-aurora-500/70"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">End Date</span>
+                <input
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, endDate: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-slate-100 outline-none transition focus:border-aurora-500/70"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Action Type</span>
+                <select
+                  value={filters.actionType}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, actionType: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-slate-100 outline-none transition focus:border-aurora-500/70"
+                >
+                  {actionTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type === "all" ? "All" : type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Project</span>
+                <select
+                  value={filters.project}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, project: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-slate-100 outline-none transition focus:border-aurora-500/70"
+                >
+                  {projects.map((project) => (
+                    <option key={project} value={project}>
+                      {project === "all" ? "All" : project}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.3em] text-slate-400">Status</span>
+                <select
+                  value={filters.status}
+                  onChange={(event) =>
+                    setFilters((prev) => ({ ...prev, status: event.target.value }))
+                  }
+                  className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-slate-100 outline-none transition focus:border-aurora-500/70"
+                >
+                  {statuses.map((status) => (
+                    <option key={status} value={status}>
+                      {status === "all" ? "All" : status}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setFilters({
+                  startDate: "",
+                  endDate: "",
+                  actionType: "all",
+                  project: "all",
+                  status: "all",
+                });
+                setVisibleCount(6);
+              }}
+              className="mt-6 w-full rounded-xl border border-aurora-500/50 bg-aurora-500/10 px-4 py-2 text-sm text-aurora-200 transition hover:bg-aurora-500/20"
+            >
+              Reset filters
+            </button>
+          </div>
+
+          <div className="glass-panel rounded-3xl p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                {visibleActivities.length} / {filtered.length}
+              </p>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {visibleActivities.map((activity) => (
+                <article
+                  key={activity.id}
+                  className="rounded-2xl border border-slate-800/80 bg-midnight-800/80 p-4 transition hover:border-aurora-500/40"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.2em] ${
+                          statusStyles[activity.status]
+                        }`}
+                      >
+                        {activity.status}
+                      </span>
+                      <span className="text-xs text-slate-400 text-mono">
+                        {new Date(activity.timestamp).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-400">
+                      {new Date(activity.timestamp).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
+                      {activity.actionType}
+                    </span>
+                    <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-200">
+                      {activity.project}
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm text-slate-200">{activity.description}</p>
+                </article>
+              ))}
+            </div>
+
+            {visibleActivities.length < filtered.length && (
+              <button
+                type="button"
+                onClick={() => setVisibleCount((prev) => prev + 4)}
+                className="mt-6 w-full rounded-xl border border-slate-700/70 bg-midnight-700/50 px-4 py-2 text-sm text-slate-200 transition hover:border-aurora-500/40"
+              >
+                Load more activity
+              </button>
+            )}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
