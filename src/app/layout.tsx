@@ -26,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={\`\${spaceGrotesk.variable} \${plexMono.variable} min-h-screen bg-midnight-900\`}>
+      <body className={`${spaceGrotesk.variable} ${plexMono.variable} min-h-screen bg-midnight-900`}>
         {children}
       </body>
     </html>
