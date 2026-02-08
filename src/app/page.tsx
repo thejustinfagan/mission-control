@@ -5,6 +5,7 @@ import { Navigation, ViewType } from "@/components/navigation";
 import { CalendarView } from "@/components/calendar-view";
 import { SearchView } from "@/components/search-view";
 import { ProjectsView } from "@/components/projects-view";
+import { SummaryView } from "@/components/summary-view";
 
 const mockActivities = [
   {
@@ -370,7 +371,7 @@ function ActivityFeed() {
 }
 
 export default function MissionControlPage() {
-  const [activeView, setActiveView] = useState<ViewType>("activity");
+  const [activeView, setActiveView] = useState<ViewType>("summary");
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -383,12 +384,15 @@ export default function MissionControlPage() {
                 Mission Control
               </p>
               <h1 className="mt-2 text-4xl font-semibold text-white">
+                {activeView === "summary" && "Executive Summary"}
                 {activeView === "activity" && "Activity Feed"}
                 {activeView === "projects" && "Project Tracker"}
                 {activeView === "calendar" && "Schedule Calendar"}
                 {activeView === "search" && "Global Search"}
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-slate-300">
+                {activeView === "summary" &&
+                  "Daily highlights, decisions, shipped items, and blockers. The executive view."}
                 {activeView === "activity" &&
                   "Live telemetry from Barry's sessions. Track intent, context, and delivery status."}
                 {activeView === "projects" &&
@@ -409,6 +413,7 @@ export default function MissionControlPage() {
         </header>
 
         <div className="mt-8">
+          {activeView === "summary" && <SummaryView />}
           {activeView === "activity" && <ActivityFeed />}
           {activeView === "projects" && <ProjectsView />}
           {activeView === "calendar" && <CalendarView />}

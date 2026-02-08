@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export type ViewType = "activity" | "calendar" | "search" | "projects";
+export type ViewType = "activity" | "summary" | "projects" | "calendar" | "search";
 
 interface NavigationProps {
   activeView: ViewType;
@@ -10,7 +10,8 @@ interface NavigationProps {
 }
 
 const tabs: { id: ViewType; label: string; icon: string }[] = [
-  { id: "activity", label: "Activity Feed", icon: "📊" },
+  { id: "summary", label: "Summary", icon: "📋" },
+  { id: "activity", label: "Activity", icon: "📊" },
   { id: "projects", label: "Projects", icon: "🎯" },
   { id: "calendar", label: "Calendar", icon: "📅" },
   { id: "search", label: "Search", icon: "🔍" },
