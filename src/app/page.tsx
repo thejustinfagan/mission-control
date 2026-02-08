@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Navigation, ViewType } from "@/components/navigation";
 import { CalendarView } from "@/components/calendar-view";
 import { SearchView } from "@/components/search-view";
+import { ProjectsView } from "@/components/projects-view";
 
 const mockActivities = [
   {
@@ -383,12 +384,15 @@ export default function MissionControlPage() {
               </p>
               <h1 className="mt-2 text-4xl font-semibold text-white">
                 {activeView === "activity" && "Activity Feed"}
+                {activeView === "projects" && "Project Tracker"}
                 {activeView === "calendar" && "Schedule Calendar"}
                 {activeView === "search" && "Global Search"}
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-slate-300">
                 {activeView === "activity" &&
                   "Live telemetry from Barry's sessions. Track intent, context, and delivery status."}
+                {activeView === "projects" &&
+                  "Stage gate view of all projects. Research → Planning → Development → Testing → Production."}
                 {activeView === "calendar" &&
                   "Visualize scheduled tasks, cron jobs, and automated workflows."}
                 {activeView === "search" &&
@@ -406,6 +410,7 @@ export default function MissionControlPage() {
 
         <div className="mt-8">
           {activeView === "activity" && <ActivityFeed />}
+          {activeView === "projects" && <ProjectsView />}
           {activeView === "calendar" && <CalendarView />}
           {activeView === "search" && <SearchView />}
         </div>
