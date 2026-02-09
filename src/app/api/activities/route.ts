@@ -1,105 +1,96 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
 
-// Real activities - updated by Barry
-const activities = [
-  {
-    id: "act_2026020905_001",
-    timestamp: "2026-02-09T11:00:00.000Z",
-    actionType: "file",
-    description: "Updated GitHub gist tracker with stage gate view (sleep mode)",
-    project: "Mission Control",
-    status: "success",
-  },
-  {
-    id: "act_2026020904_001",
-    timestamp: "2026-02-09T10:35:00.000Z",
-    actionType: "research",
-    description: "Diagnosed Mission Control: static mock data, no real integration",
-    project: "Mission Control",
-    status: "success",
-  },
-  {
-    id: "act_2026020903_001",
-    timestamp: "2026-02-09T09:15:00.000Z",
-    actionType: "file",
-    description: "Nightly strategic review completed - all systems operational",
-    project: "Workspace",
-    status: "success",
-  },
-  {
-    id: "act_2026020808_001",
-    timestamp: "2026-02-08T21:30:00.000Z",
-    actionType: "code",
-    description: "Paper trading system shipped - $10K simulated portfolio with P&L tracking",
-    project: "Polymarket Scanner",
-    status: "success",
-  },
-  {
-    id: "act_2026020807_001",
-    timestamp: "2026-02-08T20:15:00.000Z",
-    actionType: "research",
-    description: "HVAC licensing research: CA+TX+FL = 750K+ contractors, CSLB scraper prototype working",
-    project: "Public Data Research",
-    status: "success",
-  },
-  {
-    id: "act_2026020806_001",
-    timestamp: "2026-02-08T18:00:00.000Z",
-    actionType: "code",
-    description: "JIT Chrome Extension ready - fuzzy matching, 20,429 cross-references",
-    project: "JIT Chrome Extension",
-    status: "success",
-  },
-  {
-    id: "act_2026020805_001",
-    timestamp: "2026-02-08T15:30:00.000Z",
-    actionType: "code",
-    description: "All 5 Selenium scrapers complete for truck parts price monitoring",
-    project: "Truck Parts Monitor",
-    status: "success",
-  },
-  {
-    id: "act_2026020804_001",
-    timestamp: "2026-02-08T12:00:00.000Z",
-    actionType: "code",
-    description: "Baseball Showdown CLI complete - 63/63 tests passing, full game engine",
-    project: "Baseball Showdown",
-    status: "success",
-  },
-  {
-    id: "act_2026020803_001",
-    timestamp: "2026-02-08T08:15:00.000Z",
-    actionType: "code",
-    description: "Fleet Intel crash tab enhanced - 4.59M records, risk scoring, casualties",
-    project: "Fleet Intel",
-    status: "success",
-  },
-  {
-    id: "act_2026020707_001",
-    timestamp: "2026-02-07T23:30:00.000Z",
-    actionType: "deploy",
-    description: "Igor rule change pipeline deployed to Battle Dinghy (2,457 lines)",
-    project: "Battle Dinghy",
-    status: "success",
-  },
-  {
-    id: "act_2026020706_001",
-    timestamp: "2026-02-07T18:00:00.000Z",
-    actionType: "research",
-    description: "Designed Fagan Holdings company structure with 3 OpCos",
-    project: "Business Structure",
-    status: "success",
-  },
-  {
-    id: "act_2026020705_001",
-    timestamp: "2026-02-07T14:30:00.000Z",
-    actionType: "code",
-    description: "Fleet Intel risk scoring: non-trucking facilities flagged HIGH risk",
-    project: "Fleet Intel",
-    status: "success",
-  },
-];
+// Activity type definition
+interface Activity {
+  id: string;
+  timestamp: string;
+  actionType: string;
+  description: string;
+  project: string;
+  status: string;
+}
+
+// Path to activities data file
+const dataPath = path.join(process.cwd(), "src/data/activities.json");
+
+function getActivities(): Activity[] {
+  try {
+    const data = fs.readFileSync(dataPath, "utf-8");
+    return JSON.parse(data);
+  } catch (e) {
+    console.error("Error reading activities:", e);
+    return [];
+  }
+}
+
+function saveActivities(activities: Activity[]): boolean {
+  try {
+    fs.writeFileSync(dataPath, JSON.stringify(activities, null, 2));
+    return true;
+  } catch (e) {
+    console.error("Error saving activities:", e);
+    return false;
+  }
+}
 
 export async function GET() {
+  const activities = getActivities();
   return NextResponse.json(activities);
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    
+    // Validate required fields
+    if (!body.description || !body.project || !body.actionType) {
+      return NextResponse.json(
+        { error: "Missing required fields: description, project, actionType" },
+        { status: 400 }
+      );
+    }
+    
+    // Generate activity
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
+    const timeStr = now.getHours().toString().padStart(2, "0");
+    
+    const activities = getActivities();
+    
+    // Find next sequence number for today
+    const todayPrefix = `act_${dateStr}`;
+    const todayCount = activities.filter(a => a.id.startsWith(todayPrefix)).length;
+    
+    const newActivity: Activity = {
+      id: `${todayPrefix}${timeStr}_${(todayCount + 1).toString().padStart(3, "0")}`,
+      timestamp: now.toISOString(),
+      actionType: body.actionType,
+      description: body.description,
+      project: body.project,
+      status: body.status || "success",
+    };
+    
+    // Prepend new activity (most recent first)
+    activities.unshift(newActivity);
+    
+    // Keep last 100 activities
+    const trimmed = activities.slice(0, 100);
+    
+    if (saveActivities(trimmed)) {
+      return NextResponse.json(newActivity, { status: 201 });
+    } else {
+      return NextResponse.json(
+        { error: "Failed to save activity" },
+        { status: 500 }
+      );
+    }
+  } catch (e) {
+    console.error("POST error:", e);
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
+  }
 }
