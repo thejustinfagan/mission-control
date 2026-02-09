@@ -42,7 +42,7 @@ function ActivityFeed() {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const res = await fetch("/activities.json?" + Date.now());
+        const res = await fetch("/api/activities?" + Date.now());
         const data = await res.json();
         setActivities(data);
         setLastUpdate(new Date());
