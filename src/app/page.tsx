@@ -1,134 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigation, ViewType } from "@/components/navigation";
 import { CalendarView } from "@/components/calendar-view";
 import { SearchView } from "@/components/search-view";
 import { ProjectsView } from "@/components/projects-view";
 import { SummaryView } from "@/components/summary-view";
 
-const mockActivities = [
-  {
-    id: "act_001",
-    timestamp: "2026-02-08T02:15:00.000Z",
-    actionType: "code",
-    description: "Added detailed crash history tab to Fleet Intel with 4.59M records.",
-    project: "Fleet Intel",
-    status: "success",
-  },
-  {
-    id: "act_002",
-    timestamp: "2026-02-07T23:30:00.000Z",
-    actionType: "deploy",
-    description: "Igor rule change pipeline pushed to Railway.",
-    project: "Battle Dinghy",
-    status: "success",
-  },
-  {
-    id: "act_003",
-    timestamp: "2026-02-07T22:00:00.000Z",
-    actionType: "code",
-    description: "Built Igor pipeline: parser, builder, tester, deployer, responder.",
-    project: "Battle Dinghy",
-    status: "success",
-  },
-  {
-    id: "act_004",
-    timestamp: "2026-02-07T18:00:00.000Z",
-    actionType: "research",
-    description: "Designed Fagan Holdings company structure with 3 OpCos.",
-    project: "Business Structure",
-    status: "success",
-  },
-  {
-    id: "act_005",
-    timestamp: "2026-02-06T18:10:00.000Z",
-    actionType: "deploy",
-    description: "Deployed Mission Control dashboard to Railway.",
-    project: "Mission Control",
-    status: "success",
-  },
-  {
-    id: "act_006",
-    timestamp: "2026-02-06T18:02:00.000Z",
-    actionType: "code",
-    description: "Imported 4.89M crash records to Fleet Intel database.",
-    project: "Fleet Intel",
-    status: "success",
-  },
-  {
-    id: "act_007",
-    timestamp: "2026-02-06T16:51:00.000Z",
-    actionType: "research",
-    description: "Audited 4 ClawHub skills for security concerns.",
-    project: "OpenClaw Config",
-    status: "success",
-  },
-  {
-    id: "act_008",
-    timestamp: "2026-02-06T15:10:00.000Z",
-    actionType: "deploy",
-    description: "Fixed threadchess Railway - copied Battle Dinghy credentials.",
-    project: "threadchess",
-    status: "success",
-  },
-  {
-    id: "act_009",
-    timestamp: "2026-02-06T14:46:00.000Z",
-    actionType: "code",
-    description: "Installed skills: project-management, self-reflection, sophie-optimizer.",
-    project: "OpenClaw Config",
-    status: "success",
-  },
-  {
-    id: "act_010",
-    timestamp: "2026-02-06T14:30:00.000Z",
-    actionType: "research",
-    description: "Researched Chrome extension architecture for JIT parts lookup.",
-    project: "JIT Chrome Extension",
-    status: "success",
-  },
-  {
-    id: "act_011",
-    timestamp: "2026-02-06T12:00:00.000Z",
-    actionType: "file",
-    description: "Consolidated X_Simulator to Next.js only, removed Flask UI.",
-    project: "X_Simulator",
-    status: "success",
-  },
-  {
-    id: "act_012",
-    timestamp: "2026-02-06T08:00:00.000Z",
-    actionType: "file",
-    description: "Created PIPELINE.md with 53 project items.",
-    project: "Workspace",
-    status: "success",
-  },
-  {
-    id: "act_013",
-    timestamp: "2026-02-05T21:30:00.000Z",
-    actionType: "code",
-    description: "Imported 4.38M FMCSA carriers to local SQLite database.",
-    project: "Fleet Intel",
-    status: "success",
-  },
-  {
-    id: "act_014",
-    timestamp: "2026-02-05T20:00:00.000Z",
-    actionType: "deploy",
-    description: "Integrated ThreadChess game engine into X_Simulator.",
-    project: "X_Simulator",
-    status: "success",
-  },
-  {
-    id: "act_015",
-    timestamp: "2026-02-04T15:00:00.000Z",
-    actionType: "deploy",
-    description: "Battle Dinghy live on Twitter @BattleDinghy.",
-    project: "Battle Dinghy",
-    status: "success",
-  },
-];
+interface Activity {
+  id: string;
+  timestamp: string;
+  actionType: string;
+  description: string;
+  project: string;
+  status: string;
+}
 
 const actionTypes = ["all", "research", "code", "message", "file", "deploy"] as const;
 const statuses = ["all", "success", "pending", "failed"] as const;
@@ -140,6 +26,9 @@ const statusStyles: Record<string, string> = {
 };
 
 function ActivityFeed() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -149,13 +38,33 @@ function ActivityFeed() {
   });
   const [visibleCount, setVisibleCount] = useState(8);
 
-  const projects = useMemo(() => {
-    const unique = new Set(mockActivities.map((activity) => activity.project));
-    return ["all", ...Array.from(unique).sort()];
+  // Fetch activities from static JSON (updated by Barry)
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const res = await fetch("/activities.json?" + Date.now());
+        const data = await res.json();
+        setActivities(data);
+        setLastUpdate(new Date());
+      } catch (err) {
+        console.error("Failed to load activities:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchActivities();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchActivities, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
+  const projects = useMemo(() => {
+    const unique = new Set(activities.map((activity) => activity.project));
+    return ["all", ...Array.from(unique).sort()];
+  }, [activities]);
+
   const filtered = useMemo(() => {
-    return mockActivities.filter((activity) => {
+    return activities.filter((activity) => {
       if (filters.actionType !== "all" && activity.actionType !== filters.actionType) {
         return false;
       }
@@ -179,7 +88,7 @@ function ActivityFeed() {
       }
       return true;
     });
-  }, [filters]);
+  }, [filters, activities]);
 
   const visibleActivities = filtered.slice(0, visibleCount);
 
@@ -189,8 +98,21 @@ function ActivityFeed() {
       100,
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-slate-400">Loading activities...</div>
+      </div>
+    );
+  }
+
   return (
     <>
+      {lastUpdate && (
+        <p className="mb-4 text-xs text-slate-500">
+          Last updated: {lastUpdate.toLocaleString()}
+        </p>
+      )}
       <div className="grid gap-4 md:grid-cols-3">
         <div className="glass-panel rounded-2xl px-5 py-4">
           <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Events</p>
