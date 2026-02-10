@@ -253,7 +253,7 @@ export function SummaryView() {
         <h2 className="text-lg font-semibold text-white">🌐 Live Services</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {[
-            { name: "Fleet Intel v3", url: "https://excited-francisco-bean-guy.trycloudflare.com", status: "up" },
+            { name: "Fleet Intel v3", url: "https://sphere-scsi-wait-submitting.trycloudflare.com", status: "up" },
             { name: "Battle Dinghy", url: "https://twitter.com/BattleDinghy", status: "up" },
             { name: "ThreadChess", url: "https://powerful-optimism-production.up.railway.app", status: "up" },
             { name: "Mission Control", url: "https://mission-control-production-8b21.up.railway.app", status: "up" },

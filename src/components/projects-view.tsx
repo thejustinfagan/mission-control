@@ -33,7 +33,7 @@ const projects: Project[] = [
     lastWorked: "2026-02-08",
     nextAction: "Premium safety reports (PDF export)",
     blockers: "none",
-    liveUrl: "https://excited-francisco-bean-guy.trycloudflare.com",
+    liveUrl: "https://sphere-scsi-wait-submitting.trycloudflare.com",
     progress: "4.38M carriers + 4.59M crash records",
   },
   {
