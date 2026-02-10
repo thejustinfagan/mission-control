@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 type StageType = "production" | "testing" | "development" | "planning" | "research" | "archived";
 
@@ -278,58 +279,67 @@ function ProjectCard({ project }: { project: Project }) {
   const stage = stageConfig[project.stage];
   
   return (
-    <article className="rounded-2xl border border-slate-800/80 bg-midnight-800/80 p-4 transition hover:border-aurora-500/40">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{project.emoji}</span>
-          <div>
-            <h3 className="font-semibold text-white">{project.name}</h3>
-            <p className="text-xs text-slate-400">{project.status}</p>
+    <Link href={`/projects/${project.id}`}>
+      <article className="rounded-2xl border border-slate-800/80 bg-midnight-800/80 p-4 transition hover:border-aurora-500/40 cursor-pointer group">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{project.emoji}</span>
+            <div>
+              <h3 className="font-semibold text-white group-hover:text-aurora-300 transition">{project.name}</h3>
+              <p className="text-xs text-slate-400">{project.status}</p>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            {project.needsDecision && (
+              <span className="rounded-full bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 text-xs text-rose-300">
+                ⚠️ Decision Needed
+              </span>
+            )}
+            {project.daysStale && project.daysStale >= 3 && (
+              <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-xs text-amber-300">
+                {project.daysStale}d stale
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          {project.needsDecision && (
-            <span className="rounded-full bg-rose-500/20 border border-rose-500/40 px-2 py-0.5 text-xs text-rose-300">
-              ⚠️ Decision Needed
-            </span>
-          )}
-          {project.daysStale && project.daysStale >= 3 && (
-            <span className="rounded-full bg-amber-500/20 border border-amber-500/40 px-2 py-0.5 text-xs text-amber-300">
-              {project.daysStale}d stale
-            </span>
+        
+        {project.progress && (
+          <p className="mt-2 text-sm text-slate-300">{project.progress}</p>
+        )}
+        
+        <div className="mt-3 space-y-1.5">
+          <p className="text-xs text-slate-400">
+            <span className="text-slate-500">Next:</span> {project.nextAction}
+          </p>
+          {project.blockers !== "none" && (
+            <p className="text-xs text-rose-400">
+              <span className="text-rose-500">Blocked:</span> {project.blockers}
+            </p>
           )}
         </div>
-      </div>
-      
-      {project.progress && (
-        <p className="mt-2 text-sm text-slate-300">{project.progress}</p>
-      )}
-      
-      <div className="mt-3 space-y-1.5">
-        <p className="text-xs text-slate-400">
-          <span className="text-slate-500">Next:</span> {project.nextAction}
-        </p>
-        {project.blockers !== "none" && (
-          <p className="text-xs text-rose-400">
-            <span className="text-rose-500">Blocked:</span> {project.blockers}
-          </p>
-        )}
-      </div>
-      
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-slate-500">Last: {project.lastWorked}</span>
-        {project.liveUrl && (
-          <a
-            href={project.liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-aurora-500/10 border border-aurora-500/30 px-2 py-1 text-xs text-aurora-300 hover:bg-aurora-500/20 transition"
-          >
-            View Live →
-          </a>
-        )}
-      </div>
-    </article>
+        
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-xs text-slate-500">Last: {project.lastWorked}</span>
+          <div className="flex items-center gap-2">
+            {project.liveUrl && (
+              <span
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(project.liveUrl, '_blank');
+                }}
+                className="rounded-lg bg-aurora-500/10 border border-aurora-500/30 px-2 py-1 text-xs text-aurora-300 hover:bg-aurora-500/20 transition"
+              >
+                View Live →
+              </span>
+            )}
+            <span className="text-xs text-slate-500 opacity-0 group-hover:opacity-100 transition">
+              Details →
+            </span>
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }
 

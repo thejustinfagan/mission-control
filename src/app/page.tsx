@@ -6,6 +6,7 @@ import { CalendarView } from "@/components/calendar-view";
 import { SearchView } from "@/components/search-view";
 import { ProjectsView } from "@/components/projects-view";
 import { SummaryView } from "@/components/summary-view";
+import { JustinDashboard } from "@/components/justin-dashboard";
 
 interface Activity {
   id: string;
@@ -293,7 +294,7 @@ function ActivityFeed() {
 }
 
 export default function MissionControlPage() {
-  const [activeView, setActiveView] = useState<ViewType>("summary");
+  const [activeView, setActiveView] = useState<ViewType>("dashboard");
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -306,6 +307,7 @@ export default function MissionControlPage() {
                 Mission Control
               </p>
               <h1 className="mt-2 text-4xl font-semibold text-white">
+                {activeView === "dashboard" && "Your Actions"}
                 {activeView === "summary" && "Executive Summary"}
                 {activeView === "activity" && "Activity Feed"}
                 {activeView === "projects" && "Project Tracker"}
@@ -313,6 +315,8 @@ export default function MissionControlPage() {
                 {activeView === "search" && "Global Search"}
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-slate-300">
+                {activeView === "dashboard" &&
+                  "Everything waiting on you across all projects. Prioritized and actionable."}
                 {activeView === "summary" &&
                   "Daily highlights, decisions, shipped items, and blockers. The executive view."}
                 {activeView === "activity" &&
@@ -335,6 +339,7 @@ export default function MissionControlPage() {
         </header>
 
         <div className="mt-8">
+          {activeView === "dashboard" && <JustinDashboard />}
           {activeView === "summary" && <SummaryView />}
           {activeView === "activity" && <ActivityFeed />}
           {activeView === "projects" && <ProjectsView />}
