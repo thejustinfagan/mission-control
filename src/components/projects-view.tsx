@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { projects as projectsData, Project } from "@/data/projects";
 
 type StageType = "production" | "testing" | "development" | "planning" | "research" | "archived";
 
-interface Project {
+// Transform rich Project data to view format
+interface ViewProject {
   id: string;
   name: string;
   emoji: string;
@@ -21,218 +23,34 @@ interface Project {
   daysStale?: number;
 }
 
-const projects: Project[] = [
-  // PRODUCTION
-  {
-    id: "fleet-intel",
-    name: "Fleet Intel v3",
-    emoji: "🚛",
-    stage: "production",
-    priority: 1,
-    status: "Deployed + Enhanced",
-    lastWorked: "2026-02-08",
-    nextAction: "Premium safety reports (PDF export)",
-    blockers: "none",
-    liveUrl: "https://sphere-scsi-wait-submitting.trycloudflare.com",
-    progress: "4.38M carriers + 4.59M crash records",
-  },
-  {
-    id: "battle-dinghy",
-    name: "Battle Dinghy",
-    emoji: "⚔️",
-    stage: "production",
-    priority: 2,
-    status: "Game Factory MVP",
-    lastWorked: "2026-02-07",
-    nextAction: "Add Baseball Showdown as second game type",
-    blockers: "none",
-    liveUrl: "https://twitter.com/BattleDinghy",
-    progress: "Igor rule pipeline deployed",
-  },
-  {
-    id: "threadchess",
-    name: "ThreadChess",
-    emoji: "♟️",
-    stage: "production",
-    priority: 5,
-    status: "Live on Railway",
-    lastWorked: "2026-02-06",
-    nextAction: "Monitor for stability",
-    blockers: "none",
-    liveUrl: "https://powerful-optimism-production.up.railway.app",
-  },
-  {
-    id: "mission-control",
-    name: "Mission Control",
-    emoji: "🎛️",
-    stage: "production",
-    priority: 2,
-    status: "Dashboard live",
-    lastWorked: "2026-02-08",
-    nextAction: "Real-time activity logging",
-    blockers: "none",
-    liveUrl: "https://mission-control-production-8b21.up.railway.app",
-  },
-  // TESTING
-  {
-    id: "baseball-showdown",
-    name: "Baseball Showdown",
-    emoji: "⚾",
-    stage: "testing",
-    priority: 3,
-    status: "Phase 1 CLI Complete",
-    lastWorked: "2026-02-08",
-    nextAction: "Justin playtest, then Phase 2 (Ore Protocol)",
-    blockers: "none",
-    progress: "63/63 tests passing, 10 games validated",
-  },
-  {
-    id: "polymarket-scanner",
-    name: "Polymarket Scanner",
-    emoji: "📊",
-    stage: "testing",
-    priority: 3,
-    status: "Paper Trading",
-    lastWorked: "2026-02-08",
-    nextAction: "4-6 weeks validation before real money",
-    blockers: "none",
-    progress: "129 open paper trades",
-  },
-  // DEVELOPMENT
-  {
-    id: "jit-extension",
-    name: "JIT Chrome Extension",
-    emoji: "💼",
-    stage: "development",
-    priority: 2,
-    status: "Building",
-    lastWorked: "2026-02-08",
-    nextAction: "Convert icons to PNG, test on competitors",
-    blockers: "none",
-    progress: "68 parts, 9,914 cross-refs",
-  },
-  {
-    id: "truck-parts-db",
-    name: "Truck Parts Cross-Ref DB",
-    emoji: "🔧",
-    stage: "development",
-    priority: 4,
-    status: "Active",
-    lastWorked: "2026-02-08",
-    nextAction: "Continue scraping/mapping",
-    blockers: "none",
-    progress: "Schema + 10 brands seeded",
-  },
-  {
-    id: "ai-calibration",
-    name: "AI Calibration",
-    emoji: "🧠",
-    stage: "development",
-    priority: 13,
-    status: "Testing Models",
-    lastWorked: "2026-02-08",
-    nextAction: "ChatGPT Web o1/o3 via browser",
-    blockers: "none",
-    progress: "3/4 models tested (38%)",
-  },
-  {
-    id: "findtruckservice",
-    name: "FindTruckService Scraper",
-    emoji: "🔍",
-    stage: "development",
-    priority: 4,
-    status: "Building",
-    lastWorked: "2026-02-08",
-    nextAction: "Rebuild locally, test national scrape",
-    blockers: "none",
-    progress: "Architecture designed",
-  },
-  // PLANNING
-  {
-    id: "wife-calendar",
-    name: "Wife Calendar",
-    emoji: "📅",
-    stage: "planning",
-    priority: 6,
-    status: "OCR Pipeline Built",
-    lastWorked: "2026-02-04",
-    nextAction: "Justin tests with real photo",
-    blockers: "Needs Justin test",
-    daysStale: 4,
-    needsDecision: true,
-  },
-  {
-    id: "google-drive",
-    name: "Google Drive Sync",
-    emoji: "📁",
-    stage: "planning",
-    priority: 12,
-    status: "Ready to Install",
-    lastWorked: "2026-02-06",
-    nextAction: "Justin runs brew install (needs sudo)",
-    blockers: "Needs sudo password",
-  },
-  // RESEARCH
-  {
-    id: "polymarket-research",
-    name: "Polymarket Research",
-    emoji: "📈",
-    stage: "research",
-    priority: 7,
-    status: "Active",
-    lastWorked: "2026-02-08",
-    nextAction: "Backtest one strategy",
-    blockers: "none",
-    progress: "35% - Cluster arb strategy identified",
-  },
-  {
-    id: "public-data",
-    name: "Public Data Products",
-    emoji: "🗃️",
-    stage: "research",
-    priority: 8,
-    status: "Active",
-    lastWorked: "2026-02-06",
-    nextAction: "Research one more industry",
-    blockers: "none",
-    progress: "30% - Fleet Intel proving value",
-  },
-  {
-    id: "battle-dinghy-ore",
-    name: "Battle Dinghy ORE",
-    emoji: "🎰",
-    stage: "research",
-    priority: 10,
-    status: "Paused",
-    lastWorked: "Unknown",
-    nextAction: "ORE token integration",
-    blockers: "none",
-  },
-  // ARCHIVED
-  {
-    id: "x-simulator",
-    name: "X_Simulator",
-    emoji: "🐦",
-    stage: "archived",
-    priority: 99,
-    status: "Archived",
-    lastWorked: "2026-02-06",
-    nextAction: "Reference only",
-    blockers: "none",
-    progress: "Archived as sandbox (2026-02-08)",
-  },
-  {
-    id: "swipe-nft",
-    name: "Swipe NFT",
-    emoji: "🎴",
-    stage: "archived",
-    priority: 99,
-    status: "On Hold",
-    lastWorked: "Unknown",
-    nextAction: "Wire up NFT library APIs",
-    blockers: "none",
-  },
-];
+function toViewProject(p: Project): ViewProject {
+  const justinActions = p.nextActions.filter(a => a.owner === 'justin' && !a.completed);
+  const barryActions = p.nextActions.filter(a => a.owner === 'barry' && !a.completed);
+  const nextAction = justinActions[0]?.label || barryActions[0]?.label || 'No actions';
+  
+  // Calculate days stale
+  const lastWorkedDate = new Date(p.lastWorked);
+  const now = new Date();
+  const daysStale = Math.floor((now.getTime() - lastWorkedDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  return {
+    id: p.id,
+    name: p.name,
+    emoji: p.emoji,
+    stage: p.stage,
+    priority: p.priority,
+    status: p.status,
+    lastWorked: p.lastWorked,
+    nextAction,
+    blockers: p.blockers.length > 0 ? p.blockers.join(', ') : 'none',
+    liveUrl: p.liveUrl,
+    progress: p.metrics ? p.metrics.map(m => `${m.label}: ${m.value}`).join(' • ') : undefined,
+    needsDecision: !!p.needsDecision,
+    daysStale: daysStale >= 3 ? daysStale : undefined,
+  };
+}
+
+const projects: ViewProject[] = projectsData.map(toViewProject);
 
 const stageConfig: Record<StageType, { label: string; color: string; bgColor: string; borderColor: string }> = {
   production: {
@@ -275,9 +93,7 @@ const stageConfig: Record<StageType, { label: string; color: string; bgColor: st
 
 const stages: StageType[] = ["production", "testing", "development", "planning", "research", "archived"];
 
-function ProjectCard({ project }: { project: Project }) {
-  const stage = stageConfig[project.stage];
-  
+function ProjectCard({ project }: { project: ViewProject }) {
   return (
     <Link href={`/projects/${project.id}`}>
       <article className="rounded-2xl border border-slate-800/80 bg-midnight-800/80 p-4 transition hover:border-aurora-500/40 cursor-pointer group">
@@ -411,6 +227,8 @@ export function ProjectsView() {
         </button>
         {stages.map((stage) => {
           const config = stageConfig[stage];
+          const count = stageCounts[stage];
+          if (count === 0) return null;
           return (
             <button
               key={stage}
@@ -421,7 +239,7 @@ export function ProjectsView() {
                   : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
               }`}
             >
-              {config.label} ({stageCounts[stage]})
+              {config.label} ({count})
             </button>
           );
         })}
@@ -434,30 +252,6 @@ export function ProjectsView() {
           .map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
-      </div>
-      
-      {/* Stage Gate Flow */}
-      <div className="mt-8 glass-panel rounded-3xl p-6">
-        <h2 className="text-lg font-semibold text-white">Stage Gate Flow</h2>
-        <p className="mt-2 text-sm text-slate-400">Visual pipeline of project progression</p>
-        
-        <div className="mt-6 flex items-center justify-between overflow-x-auto pb-2">
-          {stages.filter(s => s !== "archived").map((stage, idx) => {
-            const config = stageConfig[stage];
-            const count = stageCounts[stage];
-            return (
-              <div key={stage} className="flex items-center">
-                <div className={`rounded-2xl ${config.bgColor} border ${config.borderColor} px-4 py-3 text-center min-w-[120px]`}>
-                  <p className={`text-2xl font-bold ${config.color}`}>{count}</p>
-                  <p className="text-xs text-slate-400 mt-1">{config.label.replace(/^.+\s/, "")}</p>
-                </div>
-                {idx < stages.length - 2 && (
-                  <div className="mx-2 text-slate-600">→</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
       </div>
     </>
   );
