@@ -1,5 +1,437 @@
 [
   {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:02:20.000Z",
+    "actionType": "code",
+    "description": "Token burn optimization: Shortened context TTL and consolidated cron pulse successful",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:02:18.000Z",
+    "actionType": "research",
+    "description": "Niche Sniper deep dive complete: Tracking 89 active COPY signals across 4 high-EV wallets",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:02:04.000Z",
+    "actionType": "code",
+    "description": "Built initial PDF Harvester logic for part pairing standardization and DB import",
+    "project": "Truck Parts Cross-Ref",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:01:53.000Z",
+    "actionType": "research",
+    "description": "Drafting Baldwin PDF parser logic: Targeting filter cross-reference tables",
+    "project": "Truck Parts Cross-Ref",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:01:43.000Z",
+    "actionType": "code",
+    "description": "Drafted Functional Spec for Truck Parts Catalog Harvester",
+    "project": "Truck Parts Cross-Ref",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:01:29.000Z",
+    "actionType": "research",
+    "description": "Planning Baldwin/Fleetguard PDF Catalog Harvester: Developing scraping and parsing strategy",
+    "project": "Truck Parts Cross-Ref",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:01:06.000Z",
+    "actionType": "research",
+    "description": "Regenerated interactive HTML report with latest Niche Sniper and FITS signals",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:01:01.000Z",
+    "actionType": "research",
+    "description": "Strategy Tracking: Built profiles for 4 high-EV wallets; identified 89 active COPY FITS signals",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021114_local",
+    "timestamp": "2026-02-11T20:00:50.000Z",
+    "actionType": "research",
+    "description": "Niche Sniper deep dive: Analyzing 'Fed Chair' nomination spread for optimal entry strategy",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:57:27.000Z",
+    "actionType": "code",
+    "description": "Created Fed Chair nomination strategy backtest based on Niche Sniper 0xde0",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:57:24.000Z",
+    "actionType": "research",
+    "description": "Niche Sniper Alert: Identified 7.92 W/L specialist in Fed/Cabinet markets with 50 active positions",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:57:13.000Z",
+    "actionType": "research",
+    "description": "Identified high-potential signals in MegaETH markets (CRYPTO KING pattern)",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:57:05.000Z",
+    "actionType": "research",
+    "description": "Analyzing current paper trading performance and identifying top-performing wallet patterns",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:56:56.000Z",
+    "actionType": "code",
+    "description": "Fleet Intel V3 Enhancement cycle complete. System is stable and ready for user testing.",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:56:53.000Z",
+    "actionType": "research",
+    "description": "Fleet Intel V3 Roadmap complete: VINs, CRM, Clusters, and Routing all SHIPPED",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:56:37.000Z",
+    "actionType": "code",
+    "description": "Successfully implemented Tactical Route Planning: Multi-stop optimization API, RouteManager component, and 'Add to Route' workflow",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:56:13.000Z",
+    "actionType": "code",
+    "description": "Implemented Route Optimization backend: API and Maps service integration",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:56:05.000Z",
+    "actionType": "research",
+    "description": "Planning Route Planning feature: Finalized spec, ready for backend implementation",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:55:52.000Z",
+    "actionType": "research",
+    "description": "Planning Route Planning feature: API spec defined, ready for implementation",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:55:49.000Z",
+    "actionType": "code",
+    "description": "Drafted Functional Spec for Tactical Route Planning: Multi-stop optimization and cluster connection",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:55:14.000Z",
+    "actionType": "research",
+    "description": "Planning Route Planning feature: Reviewing existing Google Route API integration",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:26:58.000Z",
+    "actionType": "code",
+    "description": "Successfully implemented CRM / Active Account functionality: Manual status toggle, search filters, and persistent database tracking",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:26:00.000Z",
+    "actionType": "code",
+    "description": "Implemented CRM Update API endpoint for manual status toggling",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:25:55.000Z",
+    "actionType": "research",
+    "description": "Planning manual CRM status toggle and search filtering logic",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:25:43.000Z",
+    "actionType": "code",
+    "description": "Created carrier_crm table in SQLite database to support customer flagging",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:25:35.000Z",
+    "actionType": "code",
+    "description": "Drafted Functional Spec for Active Account / CRM Flags",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:25:08.000Z",
+    "actionType": "research",
+    "description": "Planning Active Account CRM flags: Checking for current customer lists or schema requirements",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:01:58.000Z",
+    "actionType": "code",
+    "description": "Successfully implemented Industrial Park Cluster Analysis: API + AreaClusters component + Fuzzy DOT Matching",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:01:24.000Z",
+    "actionType": "code",
+    "description": "Implemented backend for Industrial Park Cluster Analysis (API and Maps service updates)",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021113_local",
+    "timestamp": "2026-02-11T19:01:01.000Z",
+    "actionType": "research",
+    "description": "Implementing Industrial Park Cluster Analysis: Adding nearby trucking search to maps service",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:25:54.000Z",
+    "actionType": "research",
+    "description": "Planning Industrial Park Cluster Analysis: API spec defined, ready for implementation",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:25:48.000Z",
+    "actionType": "code",
+    "description": "Drafted Functional Spec for Industrial Park Cluster Analysis",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:25:17.000Z",
+    "actionType": "research",
+    "description": "Planning Industrial Park Cluster Analysis: Researching Google Places API integration",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:16:49.000Z",
+    "actionType": "deploy",
+    "description": "Refreshed Cloudflare Tunnel for VIN Enrichment testing",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:04:38.000Z",
+    "actionType": "code",
+    "description": "Fully implemented Polk VIN Data Enrichment: Created DB table, API endpoints, Uploader component, and Fleet Detail tab",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:03:22.000Z",
+    "actionType": "code",
+    "description": "Built VIN Import and VIN Fetch API endpoints for Polk data integration",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:02:31.000Z",
+    "actionType": "code",
+    "description": "Executed database migration for VIN enrichment table",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:02:28.000Z",
+    "actionType": "research",
+    "description": "Ran whale alert scan: 0 alerts detected from priority wallets",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:02:08.000Z",
+    "actionType": "code",
+    "description": "Updated local database schema with carrier_vins table",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:02:06.000Z",
+    "actionType": "code",
+    "description": "Installed papaparse for CSV processing of Polk VIN data",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:01:54.000Z",
+    "actionType": "code",
+    "description": "Created carrier_vins table in SQLite database to support Polk data enrichment",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021112_local",
+    "timestamp": "2026-02-11T18:01:09.000Z",
+    "actionType": "research",
+    "description": "Ran whale alert scan: 0 alerts detected from priority wallets",
+    "project": "Polymarket",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:55:31.000Z",
+    "actionType": "code",
+    "description": "Drafted detailed Functional Spec for VIN Data Enrichment",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:55:03.000Z",
+    "actionType": "research",
+    "description": "Planning VIN import functionality: Checking for sample Polk data files",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:28:53.000Z",
+    "actionType": "code",
+    "description": "Created V3 Enhancement Roadmap for VINs, CRM, Clusters, and Routing",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:28:45.000Z",
+    "actionType": "research",
+    "description": "Planning major feature expansion: VIN enrichment, Customer CRM, Cluster Analysis, and Route Planning",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:25:08.000Z",
+    "actionType": "code",
+    "description": "Temporary shift to Gemini-Architect model while Opus tokens are exhausted",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:24:09.000Z",
+    "actionType": "code",
+    "description": "Built 'Cognitive Synapse' pipeline to use Opus as a Spec Architect for Codex Muscle",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:21:57.000Z",
+    "actionType": "code",
+    "description": "Initialized automated token usage tracker and revised Brain-Muscle model",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:10:12.000Z",
+    "actionType": "code",
+    "description": "Configured context TTL to 1h in openclaw.json to reduce prompt token sizes",
+    "project": "Infrastructure",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:10:04.000Z",
+    "actionType": "alert",
+    "description": "Proposed automated token tracking and budgeting system to Justin",
+    "project": "Token Usage Monitoring",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:01:09.000Z",
+    "actionType": "research",
+    "description": "Audited TX/FL launch assets; identified Formspree setup as critical path for lead capture",
+    "project": "Public Data Products",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021111_local",
+    "timestamp": "2026-02-11T17:01:02.000Z",
+    "actionType": "research",
+    "description": "Analyzed existing Texas/Florida launch assets and identified next steps for revenue generation",
+    "project": "Public Data Products",
+    "status": "success"
+  },
+  {
+    "id": "act_2026021110_local",
+    "timestamp": "2026-02-11T16:56:47.000Z",
+    "actionType": "code",
+    "description": "Added 'Latest Updates' search mode using MCS-150 change detection",
+    "project": "Fleet Intel",
+    "status": "success"
+  },
+  {
     "id": "act_2026020911_001",
     "timestamp": "2026-02-09T17:00:00.000Z",
     "actionType": "code",
