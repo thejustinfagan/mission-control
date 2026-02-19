@@ -12,8 +12,29 @@ interface Activity {
   status: string;
 }
 
+const STATUS_FILE = path.join("/tmp", "mission-control-status.json");
+
 // Path to activities data file
 const dataPath = path.join(process.cwd(), "src/data/activities.json");
+
+function readStatus(): any | null {
+  try {
+    const data = fs.readFileSync(STATUS_FILE, "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+function writeStatus(data: any): boolean {
+  try {
+    fs.writeFileSync(STATUS_FILE, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    console.error("Error writing status:", e);
+    return false;
+  }
+}
 
 function getActivities(): Activity[] {
   try {
@@ -36,8 +57,9 @@ function saveActivities(activities: Activity[]): boolean {
 }
 
 export async function GET() {
-  const activities = getActivities();
-  return NextResponse.json(activities);
+  const status = readStatus();
+  const activities = Array.isArray(status?.activities) ? status.activities : null;
+  return NextResponse.json(activities ?? getActivities());
 }
 
 export async function POST(request: Request) {
@@ -57,11 +79,13 @@ export async function POST(request: Request) {
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, "");
     const timeStr = now.getHours().toString().padStart(2, "0");
     
-    const activities = getActivities();
+    const statusStore = readStatus();
+    const canWriteStatus = !!statusStore && typeof statusStore === "object" && !Array.isArray(statusStore);
+    const activities = Array.isArray(statusStore?.activities) ? statusStore.activities : getActivities();
     
     // Find next sequence number for today
     const todayPrefix = `act_${dateStr}`;
-    const todayCount = activities.filter(a => a.id.startsWith(todayPrefix)).length;
+    const todayCount = activities.filter((a: Activity) => a.id.startsWith(todayPrefix)).length;
     
     const newActivity: Activity = {
       id: `${todayPrefix}${timeStr}_${(todayCount + 1).toString().padStart(3, "0")}`,
@@ -78,14 +102,25 @@ export async function POST(request: Request) {
     // Keep last 100 activities
     const trimmed = activities.slice(0, 100);
     
-    if (saveActivities(trimmed)) {
-      return NextResponse.json(newActivity, { status: 201 });
-    } else {
+    if (canWriteStatus) {
+      const nextStatus = { ...statusStore, activities: trimmed, timestamp: new Date().toISOString() };
+      if (writeStatus(nextStatus)) {
+        return NextResponse.json(newActivity, { status: 201 });
+      }
       return NextResponse.json(
         { error: "Failed to save activity" },
         { status: 500 }
       );
     }
+
+    if (saveActivities(trimmed)) {
+      return NextResponse.json(newActivity, { status: 201 });
+    }
+
+    return NextResponse.json(
+      { error: "Failed to save activity" },
+      { status: 500 }
+    );
   } catch (e) {
     console.error("POST error:", e);
     return NextResponse.json(
