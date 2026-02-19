@@ -187,6 +187,26 @@ export function JustinDashboard({ liveData }: { liveData: LiveData | null }) {
             </div>
           </div>
 
+          {/* Page Navigation */}
+          <div className="flex flex-wrap gap-2 mt-4">
+            {[
+              { href: "/tasks", label: "Task Board", icon: "📋" },
+              { href: "/calendar", label: "Calendar", icon: "📅" },
+              { href: "/team", label: "Team", icon: "👥" },
+              { href: "/office", label: "Office", icon: "🏢" },
+              { href: "/memory", label: "Memory", icon: "🧠" },
+            ].map((page) => (
+              <a
+                key={page.href}
+                href={page.href}
+                className="flex items-center gap-1.5 bg-slate-800/60 hover:bg-aurora-500/20 border border-slate-700/50 hover:border-aurora-500/40 rounded-lg px-3 py-2 text-xs text-slate-300 hover:text-aurora-300 transition"
+              >
+                <span>{page.icon}</span>
+                <span>{page.label}</span>
+              </a>
+            ))}
+          </div>
+
           {/* Stats Row */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mt-4">
             <div className="bg-gradient-to-br from-aurora-500/20 to-aurora-600/10 rounded-lg p-3 border border-aurora-500/30">
@@ -345,29 +365,6 @@ export function JustinDashboard({ liveData }: { liveData: LiveData | null }) {
               )}
             </div>
           )}
-        </div>
-
-        {/* Internal Pages */}
-        <div className="mt-6 pt-4 border-t border-slate-800">
-          <h2 className="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Mission Control</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
-            {[
-              { href: "/tasks", label: "Task Board", icon: "📋" },
-              { href: "/calendar", label: "Calendar", icon: "📅" },
-              { href: "/team", label: "Team", icon: "👥" },
-              { href: "/office", label: "Office", icon: "🏢" },
-              { href: "/memory", label: "Memory", icon: "🧠" },
-            ].map((page) => (
-              <a
-                key={page.href}
-                href={page.href}
-                className="flex items-center gap-1.5 bg-aurora-500/10 hover:bg-aurora-500/20 border border-aurora-500/30 rounded-lg px-3 py-1.5 text-xs text-aurora-300 transition"
-              >
-                <span>{page.icon}</span>
-                <span>{page.label}</span>
-              </a>
-            ))}
-          </div>
         </div>
 
         {/* Live Projects Links */}
