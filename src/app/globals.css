@@ -25,3 +25,66 @@ body {
 .text-mono {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
+@keyframes office-screen-glow {
+  0%,
+  100% {
+    opacity: 0.6;
+    box-shadow: 0 0 8px rgba(84, 240, 193, 0.15);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(84, 240, 193, 0.45);
+  }
+}
+
+@keyframes office-status-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 rgba(52, 211, 153, 0);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.55);
+  }
+}
+
+@keyframes office-typing {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes office-cursor {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.office-screen-active {
+  animation: office-screen-glow 2.6s ease-in-out infinite;
+}
+
+.office-status-pulse {
+  animation: office-status-pulse 2.3s ease-in-out infinite;
+}
+
+.office-typing-dot {
+  animation: office-typing 1.2s ease-in-out infinite;
+}
+
+.office-cursor {
+  animation: office-cursor 1s steps(2, start) infinite;
+}
