@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/navigation";
-import { scheduledJobs, type ScheduledJob } from "@/data/schedule";
+import { type ScheduledJob } from "@/data/schedule";
 
 const CATEGORY_STYLES: Record<ScheduledJob["category"], { chip: string; dot: string; text: string }> = {
   briefing: {
@@ -139,8 +139,33 @@ function getStatusIcon(job: ScheduledJob) {
 }
 
 export default function CalendarPage() {
+  const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([]);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [selected, setSelected] = useState<{ job: ScheduledJob; time: Date } | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+    const controller = new AbortController();
+
+    const loadSchedule = async () => {
+      try {
+        const response = await fetch("/api/schedule", { signal: controller.signal });
+        if (!response.ok) throw new Error("Failed to fetch schedule");
+        const data = (await response.json()) as ScheduledJob[];
+        if (isActive) setScheduledJobs(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        console.error("Failed to load schedule:", error);
+      }
+    };
+
+    loadSchedule();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, []);
 
   const now = useMemo(() => new Date(), []);
   const today = useMemo(() => startOfDay(now), [now]);
@@ -151,7 +176,7 @@ export default function CalendarPage() {
         job,
         ...getLastNextRun(job, now),
       })),
-    [now],
+    [now, scheduledJobs],
   );
 
   const runInfoMap = useMemo(() => {
@@ -162,7 +187,7 @@ export default function CalendarPage() {
     return scheduledJobs
       .flatMap((job) => getOccurrencesForDate(job, today).map((time) => ({ job, time })))
       .sort((a, b) => a.time.getTime() - b.time.getTime());
-  }, [today]);
+  }, [scheduledJobs, today]);
 
   const occurrencesByHour = useMemo(() => {
     const map = new Map<number, { job: ScheduledJob; time: Date }[]>();
@@ -190,7 +215,7 @@ export default function CalendarPage() {
       .sort((a, b) => (a.nextRun?.getTime() ?? 0) - (b.nextRun?.getTime() ?? 0))[0];
 
     return { total, enabled, disabled, errorsLast24h, nextUpcoming };
-  }, [jobRunInfo, now]);
+  }, [jobRunInfo, now, scheduledJobs]);
 
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(today, i));

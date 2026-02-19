@@ -69,13 +69,22 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    
+    const previous = readStatus() ?? {};
+
+    const merged = {
+      ...previous,
+      ...body,
+      tasks: Array.isArray(body?.tasks) ? body.tasks : previous.tasks,
+      schedule: Array.isArray(body?.schedule) ? body.schedule : previous.schedule,
+      activities: Array.isArray(body?.activities) ? body.activities : previous.activities,
+    };
+
     // Add server timestamp
-    body.timestamp = new Date().toISOString();
-    body.pushedBy = "barry";
-    
-    if (writeStatus(body)) {
-      return NextResponse.json({ success: true, timestamp: body.timestamp });
+    merged.timestamp = new Date().toISOString();
+    merged.pushedBy = "barry";
+
+    if (writeStatus(merged)) {
+      return NextResponse.json({ success: true, timestamp: merged.timestamp });
     } else {
       return NextResponse.json({ error: "Failed to store status" }, { status: 500 });
     }

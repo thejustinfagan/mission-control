@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Task, tasks as taskData } from "@/data/tasks";
+import { useEffect, useMemo, useState } from "react";
+import { type Task } from "@/data/tasks";
 
 interface ProjectMeta {
   label: string;
@@ -217,25 +217,50 @@ function TaskCard({ task }: { task: Task }) {
 }
 
 export function TaskBoard() {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [assigneeFilter, setAssigneeFilter] = useState<AssigneeFilter>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [search, setSearch] = useState<string>("");
   const [showDone, setShowDone] = useState<boolean>(true);
 
+  useEffect(() => {
+    let isActive = true;
+    const controller = new AbortController();
+
+    const loadTasks = async () => {
+      try {
+        const response = await fetch("/api/tasks", { signal: controller.signal });
+        if (!response.ok) throw new Error("Failed to fetch tasks");
+        const data = (await response.json()) as Task[];
+        if (isActive) setTasks(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        console.error("Failed to load tasks:", error);
+      }
+    };
+
+    loadTasks();
+
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
+  }, []);
+
   const projectOptions = useMemo<ProjectOption[]>(() => {
-    const ids = Array.from(new Set(taskData.map((task) => task.project)));
+    const ids = Array.from(new Set(tasks.map((task) => task.project)));
     return ids
       .map((id) => ({
         id,
         label: PROJECT_META[id]?.label || formatProjectLabel(id),
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, []);
+  }, [tasks]);
 
   const filteredTasks = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return taskData.filter((task) => {
+    return tasks.filter((task) => {
       if (!matchesAssignee(task, assigneeFilter)) return false;
       if (projectFilter !== "all" && task.project !== projectFilter) return false;
       if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
@@ -247,7 +272,7 @@ export function TaskBoard() {
       }
       return true;
     });
-  }, [assigneeFilter, priorityFilter, projectFilter, search]);
+  }, [assigneeFilter, priorityFilter, projectFilter, search, tasks]);
 
   const tasksByStatus = useMemo<Record<Task["status"], Task[]>>(() => {
     const grouped: Record<Task["status"], Task[]> = {
@@ -270,17 +295,17 @@ export function TaskBoard() {
   }, [filteredTasks]);
 
   const summary = useMemo(() => {
-    const total = taskData.length;
-    const justinTasks = taskData.filter(
+    const total = tasks.length;
+    const justinTasks = tasks.filter(
       (task) => task.assignee === "justin" || task.assignee === "both"
     );
-    const barryTasks = taskData.filter(
+    const barryTasks = tasks.filter(
       (task) => task.assignee === "barry" || task.assignee === "both"
     );
     const justinBlocked = justinTasks.filter((task) => task.status === "blocked").length;
     const barryInProgress = barryTasks.filter((task) => task.status === "in-progress").length;
     const todayKey = new Date().toISOString().split("T")[0];
-    const completedToday = taskData.filter(
+    const completedToday = tasks.filter(
       (task) => task.status === "done" && task.completedAt?.startsWith(todayKey)
     ).length;
 
@@ -292,7 +317,7 @@ export function TaskBoard() {
       barryInProgress,
       completedToday,
     };
-  }, []);
+  }, [tasks]);
 
   return (
     <div className="space-y-6">
@@ -376,7 +401,7 @@ export function TaskBoard() {
             </div>
           </div>
           <div className="text-xs text-slate-400">
-            Showing {filteredTasks.length} of {taskData.length} tasks
+            Showing {filteredTasks.length} of {tasks.length} tasks
           </div>
         </div>
       </div>
