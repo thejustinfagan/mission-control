@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Morning Brief</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #1e1e2e;
+      --cyan: #00ffc8;
+      --amber: #ffb800;
+      --red: #ff4444;
+      --green: #00ff88;
+      --text: #e0e0e0;
+      --dim: #666;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 14px;
+      background: radial-gradient(circle at top right, #141422 0%, var(--bg) 45%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .hero {
+      border: 1px solid var(--cyan);
+      background: linear-gradient(140deg, rgba(0, 255, 200, 0.13), rgba(18, 18, 26, 0.92));
+      border-radius: 12px;
+      padding: 14px;
+    }
+    h1 {
+      margin: 0;
+      color: var(--cyan);
+      font-size: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      margin-top: 6px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--cyan);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--cyan);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 7px;
+    }
+    .card.blockers h2 {
+      color: var(--red);
+    }
+    .card.build h2 {
+      color: var(--amber);
+    }
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 14px;
+    }
+    .task-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    input[type="checkbox"] {
+      margin-top: 2px;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--green);
+      flex-shrink: 0;
+    }
+    .task-item span {
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    @media (min-width: 740px) {
+      body {
+        padding: 18px;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <h1>Morning Brief</h1>
+      <p class="subtitle">Action-first checklist. Tick items as you complete them on mobile.</p>
+      <a class="back-link" href="index.html">← Back to Mission Control</a>
+    </section>
+
+    <section class="card build">
+      <h2>Tonight's Build</h2>
+      <label class="task-item"><input type="checkbox" data-key="build-0"><span>2026-03-10 01:21 CDT — Generated this Morning Brief from INCOMPLETE.md and projects/STATUS.md with revenue and blocker priorities.</span></label>
+    </section>
+
+    <div class="grid-2">
+      <section class="card">
+        <h2>Top 5 Revenue Impact</h2>
+      <label class="task-item"><input type="checkbox" data-key="revenue-0"><span>Fleet Intel: Release asset freshness gap CLOSED — At 10:05 CT 2026-03-09, uploaded the synced 9,783-row DB to GitHub Releases (asset ID 370171327), confirmed local/remote digest match (2b0c8e12...), updated start.sh to DB_VERSION=v10 / new asset URL, and pu...</span></label>
+      <label class="task-item"><input type="checkbox" data-key="revenue-1"><span>Reseller Intel: OEM dealer API endpoint — PR #10 merged 2026-03-08. /api/oem-dealers route with brand/state/search filters. Railway auto-deploy triggered.</span></label>
+      <label class="task-item"><input type="checkbox" data-key="revenue-2"><span>Reseller Intel: OEM dealer production data — PR #11 seed deployed: 1,539 dealers serving at /api/oem-dealers (HTTP 200, pagination working). PR #12 fixed brand filter case bug. PR #13 fixed brand partial matching (brand=Mack now matches &quot;Mack Trucks&quot; via LI...</span></label>
+      <label class="task-item"><input type="checkbox" data-key="revenue-3"><span>Truck Reseller DB: Quality enrichment — SERP merged set still needs richer contact data (phone 60%, email 16%). OEM lane now has strong phone/address coverage in the current durable slice, but broader enrichment beyond phone/address/domain is still needed b...</span></label>
+      <label class="task-item"><input type="checkbox" data-key="revenue-4"><span>Truck Reseller DB 🚚: Next action: Combined handoff artifact shipped — data/truck_reseller_combined_20260309.sqlite + .csv with 2,514 unique leads (1,962 SERP + 289 OEM IN + 262 OEM multistate, 249 cross-source dupes removed). Coverage: 68% phone, 12% email....</span></label>
+      </section>
+      <section class="card blockers">
+        <h2>Top 5 Blockers</h2>
+      <label class="task-item"><input type="checkbox" data-key="blockers-0"><span>VIN Intelligence: Paused — FMCSA source blocked (403 Akamai).</span></label>
+      <label class="task-item"><input type="checkbox" data-key="blockers-1"><span>Fleet Intel: Railway env vars — All set (GEMINI_API_KEY, JWT_SECRET, GH_TOKEN, GOOGLE_MAPS_API_KEY). Verified 2026-03-07 via Railway CLI.</span></label>
+      <label class="task-item"><input type="checkbox" data-key="blockers-2"><span>Fleet Intel: Batch enrichment QA scoring — Scoring runbook ready, blocked on reviewed CSV (normalization_qa_sample_2026-02-22-reviewed.csv)</span></label>
+      <label class="task-item"><input type="checkbox" data-key="blockers-3"><span>Reseller Intel: Railway env vars — All set. Verified 2026-03-07.</span></label>
+      <label class="task-item"><input type="checkbox" data-key="blockers-4"><span>Truck Reseller DB: Clean durable OEM rerun — Confirmed at 06:1x CT on 2026-03-09. The replacement background DB data/oem_bg_fix_20260309_060212.sqlite now contains 32 rows with corrected Freightliner field parsing, matching the earlier dirty run’s first-row...</span></label>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var storageKey = "morning-brief-checks-v1";
+      var state = {};
+      try {
+        state = JSON.parse(localStorage.getItem(storageKey) || "{}");
+      } catch (err) {
+        state = {};
+      }
+
+      var checkboxes = document.querySelectorAll('input[type="checkbox"][data-key]');
+      checkboxes.forEach(function (box) {
+        var key = box.getAttribute("data-key");
+        box.checked = Boolean(state[key]);
+        box.addEventListener("change", function () {
+          state[key] = box.checked;
+          localStorage.setItem(storageKey, JSON.stringify(state));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
