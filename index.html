@@ -9,10 +9,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; padding: 12px; max-width: 900px; margin: 0 auto; }
 h1 { color: var(--cyan); font-size: 18px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
-.subtitle { color: var(--dim); font-size: 11px; margin-bottom: 14px; }
-.hero-link { border: 1px solid var(--cyan); background: rgba(0,255,200,0.07); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
-.hero-link h2 { color: var(--cyan); font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.hero-link a { color: var(--cyan); font-weight: 700; }
+.subtitle { color: var(--dim); font-size: 11px; margin-bottom: 16px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }
 .stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
 .stat .value { font-size: 20px; font-weight: 700; }
@@ -24,7 +21,7 @@ h1 { color: var(--cyan); font-size: 18px; letter-spacing: 2px; text-transform: u
 .section h2 { color: var(--cyan); font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 .item { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; line-height: 1.4; }
 .item:last-child { border-bottom: none; }
-.tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.5px; margin-right: 6px; }
+.tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.5px; }
 .tag-active { background: rgba(0,255,136,0.15); color: var(--green); }
 .tag-blocked { background: rgba(255,68,68,0.15); color: var(--red); }
 .tag-paused { background: rgba(255,184,0,0.15); color: var(--amber); }
@@ -37,62 +34,52 @@ a:hover { text-decoration: underline; }
 </head>
 <body>
 <h1>🎯 Barry Mission Control</h1>
-<div class="subtitle">Last updated: 2026-03-10 01:21 CDT</div>
-
-<div class="hero-link">
-  <h2>📱 Morning Brief</h2>
-  <div class="item"><a href="morning-brief.html">Open morning-brief.html</a> — mobile checklist generated from tracker files.</div>
-</div>
+<div class="subtitle">Last updated: 2026-03-05 08:50 CT</div>
 
 <div class="grid">
   <div class="stat"><div class="value up">✅</div><div class="label">Gateway</div></div>
   <div class="stat"><div class="value up">✅</div><div class="label">SentinelClaw</div></div>
   <div class="stat"><div class="value down">❌</div><div class="label">Antigravity</div></div>
-  <div class="stat"><div class="value up">47%</div><div class="label">Disk</div></div>
+  <div class="stat"><div class="value up">44%</div><div class="label">Disk</div></div>
+</div>
+
+<div class="section decisions">
+  <h2>⚡ Needs Your Input</h2>
+  <div class="item">🔑 <strong>GEMINI_API_KEY</strong> — Set in Railway for Fleet Intel + Reseller Intel (enables enrichment + OEM scraping)</div>
+  <div class="item">🎮 <strong>Battle Dinghy 502</strong> — Check Railway dashboard logs (code is fine, environment issue)</div>
+  <div class="item">💰 <strong>Insider Buying Alpha</strong> — Business model decision needed (SaaS? Licensing? Priority rank?)</div>
+  <div class="item">🧠 <strong>Cognitive Exoskeleton</strong> — Input format decision (you rejected 3 options)</div>
 </div>
 
 <div class="section">
   <h2>🚀 Live Deployments</h2>
-  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://dc-land-intel.vercel.app" target="_blank" rel="noopener noreferrer">DC Land Intel ⚡</a> — Deployed on Vercel</div>
-  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://territory-command-center-production.up.railway.app" target="_blank" rel="noopener noreferrer">Territory Command Center 🗺️</a> — Deployed — Monitoring</div>
-  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://x-simulator-v2-production.up.railway.app" target="_blank" rel="noopener noreferrer">X_Simulator 🎮</a> — Deployed — Awaiting Mobile UAT</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <a href="http://localhost:8000" target="_blank" rel="noopener noreferrer">SentinelClaw 🔍</a> — Running on Mac Mini</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <a href="https://battledinghy-production-13ab.up.railway.app/autonomous" target="_blank" rel="noopener noreferrer">Battle Dinghy ⛵</a> — Active — Live at /autonomous, root health patch staged</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <a href="https://fleet-intel-production.up.railway.app" target="_blank" rel="noopener noreferrer">Fleet Intel 🛰️</a> — Active — production recovered on Railway via explicit Docker runtime; blocker: none — production app is back; remaining work is a safe follow-up deploy to remove the false-negative health probe.</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <a href="https://reseller-intel-production.up.railway.app" target="_blank" rel="noopener noreferrer">Reseller Intel 🏪</a> — Active — corrected data deployed to production (23,355 companies); blocker: none — corrected data deployed live (25,411 local → 23,355 after build-time name+phone dedup).</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <a href="https://thejustinfagan.github.io/mission-control/" target="_blank" rel="noopener noreferrer">Mission Control 📊</a> — Active — Public GitHub Pages live, Beast cron recovery confirmed; blocker: none — Beast cadence, timeout, and error streak are all back to healthy state.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <a href="https://vin-intelligence-production.up.railway.app" target="_blank" rel="noopener noreferrer">VIN Intelligence 🔑</a> — Paused — FMCSA access blocked (403)</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <a href="local only (http://localhost:3000 when running)" target="_blank" rel="noopener noreferrer">Mission Control v2 🧭</a> — Active — Local MVP build-verified; blocker: No product blocker. Environment note: sandbox DNS cannot reach registry.npmjs.org, so package install verification used the existing local dependency tree via mission-control-v2/node_modules -&gt; ../reseller-intel/node_modules.</div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://fleet-intel-production.up.railway.app">Fleet Intel</a> — Enrichment: 4,269/14,472 (30%)</div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://trustworthy-integrity-production.up.railway.app">Reseller Intel</a> — Build fix PR pending merge</div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://dc-land-intel.vercel.app">DC Land Intel</a> — On Vercel, datasets pending</div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://territory-command-center-production.up.railway.app">Territory Command Center</a></div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://x-simulator-v2-production.up.railway.app">X Simulator v2</a></div>
+  <div class="item"><span class="tag tag-live">LIVE</span> <a href="https://vin-intelligence-production.up.railway.app">VIN Intelligence</a></div>
+  <div class="item"><span class="tag tag-blocked">502</span> <a href="https://battledinghy-production-13ab.up.railway.app">Battle Dinghy</a> — Railway env issue</div>
 </div>
 
 <div class="section">
   <h2>🔄 Active Work</h2>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>Fleet Intel 🛰️</strong> — Batch enrichment progress — 9,835 / 14,472 complete (68%, 4,637 remaining). Daily quota of 750 requests exhausted for 2026-03-09; midnight cron will advance the next batch. Repo mirror re-synced at 13:50 CT to match enrichment runtime.</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>Reseller Intel 🏪</strong> — Next: Consider adding real ZIP lookup via geocoding API. Production data is clean.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>Truck Reseller DB 🚚</strong> — Louisville radius-50 scrape — Saturated at 829 leads after the last 2026-03-08 run summary (new_rows=9, upserts=516), but no longer an actively growing lane. Tracker wording that implied &quot;active and growing fast&quot; was stale.</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>Battle Dinghy ⛵</strong> — Next: None urgent. Health routes live, autonomous endpoint live. Monitor.</div>
-  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>SentinelClaw 🔍</strong> — Running on Mac Mini</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>Mission Control 📊</strong> — Cron debug-run wedge — Fresh edge case found 2026-03-08 22:23–22:24 CT. A disposable isolated probe job with delivery.mode=none was added and manually triggered via openclaw cron run --expect-final. Result: the job flipped to running, produced no cron runs history, and spawned no visible child session. I removed the wedged probe cleanly (openclaw cron rm ...), but manual debug triggering is currently unreliable and should not be used to validate the delivery workaround.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>Mission Control v2 🧭</strong> — Next: UX verified at 14:35 CT 2026-03-09 — next build clean (10 static pages), all 6 routes HTTP 200, dashboard/board/calendar/links/decisions/docs all render correctly with working Kanban columns, card detail panels, comments, and history. Ready for Justin to decide: local-only ops tool vs hosted alpha rollout.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>VIN Intelligence 🔑</strong> — Paused — FMCSA source blocked (403 Akamai).</div>
-  <div class="item"><span class="tag tag-paused">PAUSED</span> <strong>AI Calibration 🧠</strong> — Paused — 3/5 models done. Chrome relay blocker.</div>
+  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>Fleet Intel</strong> — Stripe integration next, batch enrichment running nightly</div>
+  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>Reseller Intel</strong> — OEM scraper ready, enrichment stack ready, awaiting env vars</div>
+  <div class="item"><span class="tag tag-active">ACTIVE</span> <strong>DC Land Intel</strong> — ERCOT scraper built, PJM blocked, HIFLD/USDA pending</div>
+  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>Battle Dinghy</strong> — Twitter API 403 + Railway 502</div>
+  <div class="item"><span class="tag tag-blocked">BLOCKED</span> <strong>VIN Intelligence</strong> — FMCSA 403, approved import path works</div>
+  <div class="item"><span class="tag tag-paused">PAUSED</span> <strong>Polymarket</strong> — Paper trading continues, dev paused</div>
+  <div class="item"><span class="tag tag-paused">PAUSED</span> <strong>AI Calibration</strong> — 3/5 models done, Chrome relay needed</div>
 </div>
 
-<div class="section decisions">
-  <h2>⚡ Decisions & Blockers</h2>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Fleet Intel 🛰️ — Blocker: none — production app is back; remaining work is a safe follow-up deploy to remove the false-negative health probe.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Reseller Intel 🏪 — Blocker: none — corrected data deployed live (25,411 local → 23,355 after build-time name+phone dedup).</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Truck Reseller DB 🚚 — Blocker: SERP query exhaustion is still real on the legacy search lanes. OEM no longer has an active runtime blocker on this batch; the open question is prioritization (scale collection vs enrich the finished baseline).</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Mission Control 📊 — Blocker: none — Beast cadence, timeout, and error streak are all back to healthy state.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Mission Control v2 🧭 — Blocker: No product blocker. Environment note: sandbox DNS cannot reach registry.npmjs.org, so package install verification used the existing local dependency tree via mission-control-v2/node_modules -&gt; ../reseller-intel/node_modules.</div>
-  <div class="item"><span class="tag tag-paused">DECISION</span> Mission Control v2 🧭 — Decision needed: yes — local-only operations tool vs hosted alpha rollout</div>
-  <div class="item"><span class="tag tag-paused">DECISION</span> Insider Buying Alpha 💰 — Decision needed: business model (SaaS? licensing? standalone?)</div>
-  <div class="item"><span class="tag tag-paused">DECISION</span> Cognitive Exoskeleton v1.1 🦾 — Decision needed: input format for workflows</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Fleet Intel 🛰️ — Batch enrichment QA scoring — Scoring runbook ready, blocked on reviewed CSV (normalization_qa_sample_2026-02-22-reviewed.csv)</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Truck Reseller DB 🚚 — Louisville radius-50 scrape — Saturated at 829 leads after the last 2026-03-08 run summary (new_rows=9, upserts=516), but no longer an actively growing lane. Tracker wording that implied &quot;active and growing fast&quot; was stale.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Truck Reseller DB 🚚 — Old durable OEM run is dirty — data/oem_bg_20260309_055137.sqlite now proves the lane inserted rows (32) but should not be treated as the clean baseline because its earliest Freightliner rows were captured before the parser fix.</div>
-  <div class="item"><span class="tag tag-blocked">BLOCKED</span> Mission Control 📊 — Cron debug-run wedge — Fresh edge case found 2026-03-08 22:23–22:24 CT. A disposable isolated probe job with delivery.mode=none was added and manually triggered via openclaw cron run --expect-final. Result: the job flipped to running, produced no cron runs history, and spawned no visible child session. I removed the wedged probe cleanly (openclaw cron rm ...), but manual debug triggering is currently unreliable and should not be used to validate the delivery workaround.</div>
+<div class="section">
+  <h2>🛡️ System Health</h2>
+  <div class="item">📡 <strong>Default model:</strong> gpt-5.2 (Antigravity endpoint down since 2026-03-05)</div>
+  <div class="item">💾 <strong>Backup:</strong> Nightly to <a href="https://github.com/thejustinfagan/openclaw-workspace">GitHub</a></div>
+  <div class="item">🔍 <strong>Health checks:</strong> Every 15 min (auto-restart on failure)</div>
+  <div class="item">📊 <strong>Model probe:</strong> Every 6 hours (monitoring Antigravity recovery)</div>
+  <div class="item">🗂️ <strong>Active memory:</strong> 7 files (Feb logs consolidated into MEMORY.md)</div>
 </div>
 
-</body>
-</html>
+</body></html>
