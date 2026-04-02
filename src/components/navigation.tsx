@@ -12,6 +12,7 @@ const links = [
   { href: "/memory", label: "Memory", icon: "📚" },
   { href: "/team", label: "Team", icon: "🧭" },
   { href: "/office", label: "Office", icon: "🏢" },
+  { href: "/activity", label: "Activity", icon: "⚡" },
   { href: "/health", label: "Health", icon: "🦁" },
 ];
 
