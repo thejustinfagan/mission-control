@@ -1,22 +1,19 @@
 import { JustinDashboard } from "@/components/justin-dashboard";
+import { GET as getStatusResponse } from "./api/status/route";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getLiveStatus() {
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.RAILWAY_PUBLIC_DOMAIN
-      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
-      : "http://localhost:3001";
-
-    const res = await fetch(`${baseUrl}/api/status`, {
-      cache: "no-store",
-    });
+    // Do not self-fetch the public Railway URL during server render. In Railway,
+    // that hairpin request can fail even while /api/status works for browsers,
+    // leaving the homepage stuck on the workspace-files error shell.
+    const res = await getStatusResponse();
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error("Mission Control status load failed", error);
     return null;
   }
 }
