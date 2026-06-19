@@ -16,8 +16,8 @@ import type {
   ProofFeedItem,
 } from "./types";
 import { staticRegistryConnector } from "./connectors/static";
-import { httpProbeConnector } from "./connectors/http";
-import { localPathConnector } from "./connectors/local";
+import { httpProbeConnector, type HttpProbeTarget } from "./connectors/http";
+import { localPathConnector, type LocalPathTarget } from "./connectors/local";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
 import { nowIso, toEpochMs } from "./time";
@@ -103,6 +103,13 @@ const PRIORITY_RANK: Record<"high" | "medium" | "low", number> = {
 
 export interface BuildOptions {
   now?: Date;
+  /**
+   * Override HTTP probe targets. Omit to use MC_PROBE_URLS / committed defaults.
+   * Pass [] to disable HTTP probing entirely (used by tests to stay offline).
+   */
+  probeTargets?: HttpProbeTarget[];
+  /** Override local path probe targets. Omit to use MC_LOCAL_PATHS. */
+  localTargets?: LocalPathTarget[];
 }
 
 export async function buildMissionControlSnapshot(
@@ -115,12 +122,12 @@ export async function buildMissionControlSnapshot(
   const staticResult = staticRegistryConnector(now);
   // Probes are no-ops unless explicitly configured via env. Network/local
   // access is intentionally cautious; failures degrade to Unknown, not red.
-  const httpResult = await httpProbeConnector(now).catch(() => ({
+  const httpResult = await httpProbeConnector(now, options.probeTargets).catch(() => ({
     evidence: [] as Evidence[],
     claims: [] as Claim[],
     byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
   }));
-  const localResult = await localPathConnector(now).catch(() => ({
+  const localResult = await localPathConnector(now, options.localTargets).catch(() => ({
     evidence: [] as Evidence[],
     claims: [] as Claim[],
     byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
