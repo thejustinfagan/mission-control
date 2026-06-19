@@ -129,10 +129,9 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
               <AgentLanes
                 agents={filteredAgents}
                 activeAgentId={selectedAgentId}
-                onSelectAgent={(agentId) => {
-                  setSelectedAgentId(agentId);
-                  const agent = snapshot.agents.find((item) => item.id === agentId);
-                  if (agent) setSelection({ kind: "agent", item: agent });
+                onSelectAgent={(agent) => {
+                  setSelectedAgentId(agent.id);
+                  setSelection({ kind: "agent", item: agent });
                 }}
                 onExplain={setExplain}
               />
@@ -153,10 +152,9 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
           <ProjectStateGrid
             projects={filteredProjects}
             activeProjectId={selectedProjectId}
-            onSelectProject={(projectId) => {
-              setSelectedProjectId(projectId);
-              const project = snapshot.projects.find((item) => item.id === projectId);
-              if (project) setSelection({ kind: "project", item: project });
+            onSelectProject={(project) => {
+              setSelectedProjectId(project.id);
+              setSelection({ kind: "project", item: project });
             }}
             onExplain={setExplain}
           />

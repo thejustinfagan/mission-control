@@ -12,7 +12,7 @@ export function ProjectStateGrid({
 }: {
   projects: ProjectCard[];
   activeProjectId?: string | null;
-  onSelectProject?: (projectId: string) => void;
+  onSelectProject?: (project: ProjectCard) => void;
   onExplain: (record: ExplainRecord) => void;
 }) {
   return (
@@ -34,7 +34,7 @@ export function ProjectStateGrid({
 
           return (
             <article key={project.id} className={`rounded-2xl border p-4 transition ${selected ? "border-cyan-300/70 bg-cyan-400/[0.08]" : "border-white/10 bg-white/[0.03] hover:border-cyan-300/40 hover:bg-white/[0.05]"}`}>
-              <button type="button" onClick={() => onSelectProject?.(project.id)} className="block w-full text-left" aria-pressed={selected}>
+              <button type="button" onClick={() => onSelectProject?.(project)} className="block w-full text-left" aria-pressed={selected}>
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-bold text-white">{project.emoji} {project.name}</h3>
                   <StatusPill status={project.status} />

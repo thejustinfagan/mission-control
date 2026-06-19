@@ -12,7 +12,7 @@ export function AgentLanes({
 }: {
   agents: AgentCard[];
   activeAgentId?: string | null;
-  onSelectAgent?: (agentId: string) => void;
+  onSelectAgent?: (agent: AgentCard) => void;
   onExplain: (record: ExplainRecord) => void;
 }) {
   return (
@@ -37,7 +37,7 @@ export function AgentLanes({
             <article key={agent.id} className={`rounded-2xl border p-4 transition ${selected ? "border-cyan-300/70 bg-cyan-400/[0.08]" : "border-white/10 bg-white/[0.03] hover:border-cyan-300/40 hover:bg-white/[0.05]"}`}>
               <button
                 type="button"
-                onClick={() => onSelectAgent?.(agent.id)}
+                onClick={() => onSelectAgent?.(agent)}
                 className="block w-full text-left"
                 aria-pressed={selected}
               >
