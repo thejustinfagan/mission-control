@@ -4,7 +4,7 @@
 Add a real-time task board to Mission Control that tracks all active tasks, who they're assigned to (Justin or Barry), and their status.
 
 ## Live URL
-https://mission-control-production-8b21.up.railway.app
+https://web-production-2c48a.up.railway.app
 
 ## Current Architecture
 - Next.js 14 (App Router), TypeScript, Tailwind CSS
