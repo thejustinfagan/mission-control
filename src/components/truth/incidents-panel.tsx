@@ -7,16 +7,25 @@ import { StatusPill } from "./status-pill";
 export function IncidentsPanel({ incidents, onExplain }: { incidents: Incident[]; onExplain: (record: ExplainRecord) => void }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-bold text-white">Incidents / Drift</h2>
-      {incidents.length === 0 ? <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-300">No open incidents.</p> : incidents.map((incident) => (
-        <article key={incident.id} className="rounded-2xl border border-red-300/20 bg-red-400/[0.04] p-4">
-          <div className="flex items-start justify-between gap-3"><h3 className="font-bold text-white">{incident.title}</h3><StatusPill status={incident.status} /></div>
-          <p className="mt-1 text-xs text-red-200">{incident.severity} • {incident.affected}</p>
-          <p className="mt-2 text-sm text-slate-300">{incident.symptom}</p>
-          {incident.recommendedAction && <p className="mt-2 text-sm text-slate-400">Next: {incident.recommendedAction}</p>}
-          <div className="mt-3"><ExplainButton record={{ id: incident.id, title: incident.title, status: incident.status, evidenceIds: incident.evidenceIds, claimIds: incident.claimIds }} onExplain={onExplain} /></div>
-        </article>
-      ))}
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-bold text-white">Incidents / Drift</h2>
+        <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-slate-300">tap an incident</span>
+      </div>
+      {incidents.length === 0 ? <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-300">No open incidents.</p> : incidents.map((incident) => {
+        const record = { id: incident.id, title: incident.title, status: incident.status, evidenceIds: incident.evidenceIds, claimIds: incident.claimIds };
+        return (
+          <article key={incident.id} className="rounded-2xl border border-red-300/20 bg-red-400/[0.04] p-4 transition hover:border-red-200/50 hover:bg-red-400/[0.07]">
+            <button type="button" onClick={() => onExplain(record)} className="block w-full text-left">
+              <div className="flex items-start justify-between gap-3"><h3 className="font-bold text-white">{incident.title}</h3><StatusPill status={incident.status} /></div>
+              <p className="mt-1 text-xs text-red-200">{incident.severity} • {incident.affected}</p>
+              <p className="mt-2 text-sm text-slate-300">{incident.symptom}</p>
+              {incident.suspectedCause && <p className="mt-2 text-xs text-slate-400">Cause: {incident.suspectedCause}</p>}
+              {incident.recommendedAction && <p className="mt-2 text-sm text-slate-400">Next: {incident.recommendedAction}</p>}
+            </button>
+            <div className="mt-3"><ExplainButton record={record} onExplain={onExplain} /></div>
+          </article>
+        );
+      })}
     </section>
   );
 }
