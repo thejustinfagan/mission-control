@@ -201,7 +201,7 @@ export const projects: Project[] = [
     priority: 2,
     status: "Live on Railway — 8 pages",
     lastWorked: "2026-03-31",
-    liveUrl: "https://mission-control-production-8b21.up.railway.app",
+    liveUrl: "https://web-production-2c48a.up.railway.app",
     repoUrl: "https://github.com/thejustinfagan/mission-control",
     localPath: "~/dev/mission-control",
 

@@ -256,7 +256,7 @@ export function SummaryView() {
             { name: "Fleet Intel v3", url: "https://sphere-scsi-wait-submitting.trycloudflare.com", status: "up" },
             { name: "Battle Dinghy", url: "https://twitter.com/BattleDinghy", status: "up" },
             { name: "ThreadChess", url: "https://powerful-optimism-production.up.railway.app", status: "up" },
-            { name: "Mission Control", url: "https://mission-control-production-8b21.up.railway.app", status: "up" },
+            { name: "Mission Control", url: "https://web-production-2c48a.up.railway.app", status: "up" },
           ].map((service) => (
             <a
               key={service.name}

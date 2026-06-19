@@ -4,7 +4,7 @@ set -euo pipefail
 
 BEAST_MODE_DIR="${BEAST_MODE_DIR:-$HOME/projects/beast-mode}"
 PROJECTS_DIR="${PROJECTS_DIR:-$HOME/projects}"
-MC_URL="${MC_URL:-https://mission-control-rose-xi.vercel.app}"
+MC_URL="${MC_URL:-https://web-production-2c48a.up.railway.app}"
 MC_TOKEN="${MC_TOKEN:-barry-update-2026}"
 
 TMPDIR_WORK=$(mktemp -d)
@@ -30,7 +30,7 @@ results = []
 
 KNOWN = {
     'Battle_Dinghy': {'emoji': '⛵', 'name': 'Battle Dinghy', 'deployment': 'https://battledinghy-production-13ab.up.railway.app/', 'priority': 1},
-    'mission-control': {'emoji': '🎛️', 'name': 'Mission Control', 'deployment': 'https://mission-control-rose-xi.vercel.app', 'priority': 2},
+    'mission-control': {'emoji': '🎛️', 'name': 'Mission Control', 'deployment': 'https://web-production-2c48a.up.railway.app', 'priority': 2},
     'fleet-intel': {'emoji': '🚛', 'name': 'Fleet Intel', 'deployment': 'https://fleetintel.net', 'priority': 3},
     'beast-mode': {'emoji': '🦁', 'name': 'Beast Mode', 'deployment': '', 'priority': 5},
     'polymarket-bot': {'emoji': '📊', 'name': 'Polymarket Bot', 'deployment': '', 'priority': 4},

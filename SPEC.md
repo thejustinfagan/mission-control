@@ -7,7 +7,7 @@ A dashboard for Justin to monitor Barry (AI agent) activities, scheduled tasks, 
 - **Framework:** Next.js 14+ (App Router)
 - **Database:** Convex
 - **Styling:** Tailwind CSS
-- **Deployment:** Vercel (later)
+- **Deployment:** Railway
 
 ## Features
 
