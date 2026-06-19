@@ -8,6 +8,7 @@ import { GlobalStatusCard } from "./global-status-card";
 import { JustinQueue } from "./justin-queue";
 import { IncidentsPanel } from "./incidents-panel";
 import { AgentLanes } from "./agent-lanes";
+import { ProofCardBoard } from "./proof-card-board";
 import { ProofFeed } from "./proof-feed";
 import { ProjectStateGrid } from "./project-state-grid";
 import type { ExplainRequest } from "./explain-types";
@@ -76,6 +77,7 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
           <JustinQueue actions={snapshot.justinQueue} onExplain={onExplain} />
           <IncidentsPanel incidents={snapshot.incidents} onExplain={onExplain} />
           <AgentLanes agents={snapshot.agents} onExplain={onExplain} />
+          <ProofCardBoard cards={snapshot.proofCards} onExplain={onExplain} />
           <ProofFeed items={snapshot.proofFeed} onExplain={onExplain} />
           <ProjectStateGrid projects={snapshot.projects} onExplain={onExplain} />
         </div>

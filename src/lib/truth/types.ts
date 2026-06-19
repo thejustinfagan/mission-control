@@ -181,6 +181,39 @@ export interface ProofFeedItem {
   ok: boolean | null;
 }
 
+export type ProofSlotId =
+  | "change"
+  | "repo"
+  | "branch"
+  | "commit"
+  | "tests"
+  | "deploy"
+  | "liveVerification"
+  | "blocker"
+  | "nextAction";
+
+export interface ProofSlot {
+  id: ProofSlotId;
+  label: string;
+  value: string;
+  status: VerificationStatus;
+  ref?: string;
+}
+
+export interface ProofCard {
+  id: string;
+  projectId: string;
+  projectName: string;
+  title: string;
+  status: VerificationStatus;
+  confidence: Confidence;
+  updatedAt: string;
+  requiredSlots: ProofSlotId[];
+  slots: Record<ProofSlotId, ProofSlot>;
+  claimIds: string[];
+  evidenceIds: string[];
+}
+
 export type GlobalStatusLevel =
   | "all_clear"
   | "attention"
@@ -224,6 +257,7 @@ export interface MissionControlSnapshot {
   agents: Agent[];
   projects: ProjectStatus[];
   incidents: Incident[];
+  proofCards: ProofCard[];
   proofFeed: ProofFeedItem[];
   claims: Claim[];
   evidence: Evidence[];

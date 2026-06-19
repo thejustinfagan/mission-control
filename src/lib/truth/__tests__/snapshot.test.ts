@@ -22,6 +22,7 @@ describe("buildMissionControlSnapshot", () => {
       "agents",
       "projects",
       "incidents",
+      "proofCards",
       "proofFeed",
       "claims",
       "evidence",
@@ -90,6 +91,32 @@ describe("buildMissionControlSnapshot", () => {
     for (const act of s.justinQueue) expect(act.title.trim().length).toBeGreaterThan(0);
     for (const inc of s.incidents) expect(inc.title.trim().length).toBeGreaterThan(0);
     for (const item of s.proofFeed) expect(item.title.trim().length).toBeGreaterThan(0);
+  });
+
+  it("creates proof cards with the required autonomous-run proof slots", async () => {
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const projectIds = new Set(s.projects.map((p) => p.id));
+
+    expect(s.proofCards.length).toBe(s.projects.length);
+    for (const card of s.proofCards) {
+      expect(projectIds.has(card.projectId)).toBe(true);
+      expect(card.requiredSlots).toEqual([
+        "change",
+        "repo",
+        "branch",
+        "commit",
+        "tests",
+        "deploy",
+        "liveVerification",
+        "blocker",
+        "nextAction",
+      ]);
+      expect(card.slots.change.label).toBe("What changed");
+      expect(card.slots.tests.label).toBe("Tests run");
+      expect(card.slots.liveVerification.label).toBe("Live verification");
+      expect(card.claimIds.length + card.evidenceIds.length).toBeGreaterThan(0);
+      expect(card.status).not.toBe("verified");
+    }
   });
 
   it("drives the non-green global status off unknown health claims", async () => {
