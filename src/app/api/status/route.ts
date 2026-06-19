@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeIncomplete } from "@/lib/truth/legacy-status";
 
 /**
  * Live Status API
@@ -15,7 +16,22 @@ const AUTH_TOKEN = process.env.MC_AUTH_TOKEN || "barry-update-2026";
 // In-memory store (persists across warm invocations on same instance)
 let statusData: any = null;
 
-// Static fallback data embedded at build time
+function normalizeStatusPayload(data: any, source: "memory" | "static_fallback") {
+  return {
+    ...data,
+    incomplete: normalizeIncomplete(data?.incomplete),
+    ...(source === "static_fallback"
+      ? {
+          sourceWarning: {
+            kind: "static_fallback",
+            message: "Static fallback is stale and must not be treated as live truth",
+          },
+        }
+      : {}),
+  };
+}
+
+// Static fallback data embedded at build time. Kept for legacy clients only; do not treat as live truth.
 const STATIC_FALLBACK = {
   timestamp: "2026-03-16T12:09:00Z",
   summary: {
@@ -143,7 +159,8 @@ const STATIC_FALLBACK = {
 };
 
 export async function GET() {
-  const data = statusData || STATIC_FALLBACK;
+  const source = statusData ? "memory" : "static_fallback";
+  const data = normalizeStatusPayload(statusData || STATIC_FALLBACK, source);
   return NextResponse.json(data);
 }
 
