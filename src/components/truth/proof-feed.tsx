@@ -44,19 +44,33 @@ export function ProofFeed({
       {items.length === 0 ? <p className="rounded-2xl border border-white/10 p-4 text-sm text-slate-300">No proof matches this filter.</p> : (
         <div className="space-y-2">
           {items.map((item) => (
-            <button
+            <div
               key={item.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => onExplain({ id: item.id, title: item.label, status: item.status, confidence: item.confidence, evidenceIds: [item.id], claimIds: [] })}
-              className="block w-full rounded-2xl border border-cyan-300/10 bg-cyan-400/[0.03] p-3 text-left transition hover:border-cyan-300/50 hover:bg-cyan-400/[0.07]"
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") onExplain({ id: item.id, title: item.label, status: item.status, confidence: item.confidence, evidenceIds: [item.id], claimIds: [] });
+              }}
+              className="block w-full cursor-pointer rounded-2xl border border-cyan-300/10 bg-cyan-400/[0.03] p-3 text-left transition hover:border-cyan-300/50 hover:bg-cyan-400/[0.07] focus:outline-none focus:ring-2 focus:ring-cyan-300/50"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm font-semibold text-cyan-100">{item.label}</p>
                 <StatusPill status={item.status} />
               </div>
               <p className="mt-1 text-xs text-slate-400">{item.source} • {item.capturedAt} • {item.confidence} • {item.subjectLabel}</p>
-              {item.artifactUrl && <p className="mt-2 text-xs text-cyan-200">Open artifact →</p>}
-            </button>
+              {item.artifactUrl && (
+                <a
+                  href={item.artifactUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                  className="mt-2 inline-block text-xs text-cyan-200 underline decoration-cyan-300/40 underline-offset-2"
+                >
+                  Open artifact →
+                </a>
+              )}
+            </div>
           ))}
         </div>
       )}

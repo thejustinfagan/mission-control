@@ -37,6 +37,8 @@ export function GlobalStatusCard({
       <div className="mt-5 flex flex-wrap gap-2">
         <ExplainButton record={{ id: "global", title: "Global command status", status: snapshot.globalStatus, confidence: snapshot.freshness.worstStatus, evidenceIds: snapshot.evidence.slice(0, 6).map((row) => row.id), claimIds: snapshot.claims.slice(0, 6).map((claim) => claim.id) }} onExplain={onExplain} />
         <button type="button" onClick={() => onFocus?.("all")} className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:border-cyan-300/60 hover:text-cyan-100">Reset view</button>
+        <button type="button" onClick={() => window.location.reload()} className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-slate-200 transition hover:border-cyan-300/60 hover:text-cyan-100">Refresh data</button>
+        <a className="rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:text-cyan-100" href="/api/mission-control" target="_blank" rel="noreferrer">Raw API</a>
       </div>
     </section>
   );

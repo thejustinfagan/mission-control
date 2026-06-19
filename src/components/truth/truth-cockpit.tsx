@@ -57,7 +57,7 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
             <p className="text-xs font-semibold uppercase tracking-[0.4em] text-cyan-300">Mission Control</p>
             <p className="text-sm text-slate-300">Truth Machine • {snapshot.freshness.label} • source: /api/mission-control</p>
           </div>
-          <nav aria-label="Mission Control focus" className="flex gap-2 overflow-x-auto pb-1">
+          <nav aria-label="Mission Control focus" className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
             {focusTabs.map((tab) => (
               <button
                 key={tab.id}
