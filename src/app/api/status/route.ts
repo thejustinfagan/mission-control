@@ -126,7 +126,7 @@ const STATIC_FALLBACK = {
     "Feature Automation Protocol: document full pipeline",
     "Battle Dinghy v2: clean repo rewrite (69→~15 files)",
     "PostgreSQL migration: persistent DB on Railway",
-  ],
+  ] as unknown[],
   activities: [
     { time: "2026-03-16T12:09:00Z", type: "deploy", description: "Mission Control redeployed to Vercel", project: "mission-control", status: "success" },
     { time: "2026-03-16T11:13:00Z", type: "config", description: "Beast Mode cron disabled", project: "beast-mode", status: "success" },
@@ -142,9 +142,61 @@ const STATIC_FALLBACK = {
   ],
 };
 
+interface IncompleteRow {
+  project: string;
+  completed: boolean;
+  task: string;
+}
+
+/**
+ * Normalize the `incomplete` field into object rows. The legacy static fallback
+ * stores incomplete items as bare strings; older shapes mixed strings and
+ * objects. Downstream consumers expect { project, completed, task }. Bare
+ * strings are attributed to "Legacy STATUS.md" so their non-live origin is
+ * explicit and never rendered as a blank/undefined row.
+ */
+function normalizeIncomplete(incomplete: unknown): IncompleteRow[] {
+  if (!Array.isArray(incomplete)) return [];
+  return incomplete
+    .map((item): IncompleteRow | null => {
+      if (typeof item === "string") {
+        const task = item.trim();
+        if (!task) return null;
+        return { project: "Legacy STATUS.md", completed: false, task };
+      }
+      if (item && typeof item === "object") {
+        const obj = item as Record<string, unknown>;
+        const task = typeof obj.task === "string" ? obj.task.trim() : "";
+        if (!task) return null;
+        return {
+          project: typeof obj.project === "string" && obj.project.trim() ? obj.project : "Legacy STATUS.md",
+          completed: obj.completed === true,
+          task,
+        };
+      }
+      return null;
+    })
+    .filter((row): row is IncompleteRow => row !== null);
+}
+
+/** Normalize the whole payload so the legacy shape is never broken/incomplete. */
+function normalizeStatus(data: Record<string, unknown>, servingFallback: boolean) {
+  const normalized: Record<string, unknown> = {
+    ...data,
+    incomplete: normalizeIncomplete(data.incomplete),
+  };
+  if (servingFallback) {
+    normalized.sourceWarning =
+      "Serving static fallback snapshot from 2026-03-16. This is stale and NOT live evidence. See /api/mission-control for the evidence-backed truth snapshot.";
+    normalized.isFallback = true;
+  }
+  return normalized;
+}
+
 export async function GET() {
-  const data = statusData || STATIC_FALLBACK;
-  return NextResponse.json(data);
+  const servingFallback = !statusData;
+  const data = (statusData || STATIC_FALLBACK) as Record<string, unknown>;
+  return NextResponse.json(normalizeStatus(data, servingFallback));
 }
 
 export async function POST(request: Request) {
