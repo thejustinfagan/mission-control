@@ -6,12 +6,14 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/", label: "Dashboard", icon: "📊" },
   { href: "/projects", label: "Projects", icon: "🚀" },
+  { href: "/railway", label: "Railway", icon: "🚂" },
   { href: "/intel", label: "Intel", icon: "🔍" },
   { href: "/tasks", label: "Tasks", icon: "✅" },
   { href: "/calendar", label: "Calendar", icon: "📅" },
   { href: "/memory", label: "Memory", icon: "📚" },
   { href: "/team", label: "Team", icon: "🧭" },
   { href: "/office", label: "Office", icon: "🏢" },
+  { href: "/activity", label: "Activity", icon: "⚡" },
   { href: "/health", label: "Health", icon: "🦁" },
 ];
 
