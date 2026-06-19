@@ -18,10 +18,11 @@ import { computeFreshness } from "./ttl";
  * Verification status implied by a set of evidence.
  * - No evidence → unknown.
  * - All evidence stale/expired → stale.
- * - Fresh evidence that explicitly failed (ok === false) → unverified
- *   (we have a fresh signal, but it does not prove the positive claim).
  * - Fresh passing evidence (ok === true) → verified.
- * - Fresh evidence with no pass/fail (ok null) → unverified (present, not proof).
+ * - Fresh failing evidence (ok === false, none passing) → unverified
+ *   (we have a fresh negative signal, but it does not prove the positive claim).
+ * - Fresh evidence that is only uninformative (ok null, e.g. a probe that could
+ *   not run / blocked egress) → unknown. No usable signal is not a soft pass.
  */
 export function claimStatusFromEvidence(
   evidence: Evidence[],
@@ -35,7 +36,8 @@ export function claimStatusFromEvidence(
 
   if (fresh.length === 0) return "stale";
   if (fresh.some((e) => e.ok === true)) return "verified";
-  return "unverified";
+  if (fresh.some((e) => e.ok === false)) return "unverified";
+  return "unknown";
 }
 
 export interface AgentStatusResult {

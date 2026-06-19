@@ -7,7 +7,9 @@
 // browser/test evidence can do that.
 //
 // Configure via env: MC_PROBE_URLS="projectId|https://url,projectId|https://url"
-// When unset, this connector is a no-op (everything stays Unknown).
+// When MC_PROBE_URLS is unset, a small committed default set is probed instead
+// (public URLs only, no credentials). Pass explicit targets (e.g. []) to a
+// connector call to bypass both — used by tests to stay offline.
 
 import type { Claim, ConnectorResult, Evidence } from "../types";
 import { claimStatusFromEvidence } from "../rules";
@@ -23,6 +25,19 @@ export interface HttpProbeTarget {
 const PROBE_TTL_SECONDS = 300; // a reachability check is fresh for 5 minutes
 const PROBE_TIMEOUT_MS = 4000;
 
+// Default reachability targets, used when MC_PROBE_URLS is not configured.
+// NOTE: we probe Mission Control's own deployment via /api/status (a cheap JSON
+// route) rather than its root — the root rebuilds the snapshot, which would
+// recurse. /api/status does not, so this is a safe "is the Railway app serving"
+// check. Public URL, no credentials.
+export const DEFAULT_PROBE_TARGETS: HttpProbeTarget[] = [
+  {
+    projectId: "mission-control",
+    label: "Mission Control on Railway (/api/status)",
+    url: "https://web-production-2c48a.up.railway.app/api/status",
+  },
+];
+
 /** Parse MC_PROBE_URLS into targets. Only http(s) URLs are accepted. */
 export function configuredHttpTargets(
   env: NodeJS.ProcessEnv = process.env
@@ -37,6 +52,18 @@ export function configuredHttpTargets(
     targets.push({ projectId, label: url, url });
   }
   return targets;
+}
+
+/**
+ * Resolve which targets to probe: explicit MC_PROBE_URLS config if present,
+ * otherwise the committed defaults. Returns [] only if MC_PROBE_URLS is set to
+ * something that parses to nothing.
+ */
+export function resolveHttpTargets(
+  env: NodeJS.ProcessEnv = process.env
+): HttpProbeTarget[] {
+  if (env.MC_PROBE_URLS) return configuredHttpTargets(env);
+  return DEFAULT_PROBE_TARGETS;
 }
 
 export interface HttpConnectorResult extends ConnectorResult {
@@ -66,12 +93,25 @@ async function probeOne(
       cache: "no-store",
     });
     clearTimeout(timer);
-    ok = res.ok;
-    summary = ok
-      ? `HTTP ${res.status} — ${target.url} is reachable`
-      : `HTTP ${res.status} — ${target.url} responded with an error`;
-    detail = "Reachability only. A 2xx response does not prove the product works.";
-    raw = { status: res.status, url: target.url };
+
+    // A sandbox/CI egress proxy can intercept the request and return its own
+    // 403 before it ever reaches the target. That is NOT the site being down —
+    // it means our outbound policy blocked the host. Detect it and record
+    // Unknown, never a failing health signal.
+    const denyReason = res.headers.get("x-deny-reason");
+    if (denyReason) {
+      ok = null;
+      summary = `Probe blocked by network egress policy for ${target.url}`;
+      detail = `Outbound request was denied by this environment (${denyReason}), so it never reached the target. Treated as Unknown, not down. Allow this host in the environment's egress settings to enable the probe.`;
+      raw = { status: res.status, denyReason, url: target.url };
+    } else {
+      ok = res.ok;
+      summary = ok
+        ? `HTTP ${res.status} — ${target.url} is reachable`
+        : `HTTP ${res.status} — ${target.url} responded with an error`;
+      detail = "Reachability only. A 2xx response does not prove the product works.";
+      raw = { status: res.status, url: target.url };
+    }
   } catch (err) {
     // A network/egress failure is NOT proof the site is down — it may be our
     // outbound policy. Record it as Unknown, not a failed health check.
@@ -112,7 +152,7 @@ async function probeOne(
 
 export async function httpProbeConnector(
   now: Date = new Date(),
-  targets: HttpProbeTarget[] = configuredHttpTargets()
+  targets: HttpProbeTarget[] = resolveHttpTargets()
 ): Promise<HttpConnectorResult> {
   const result: HttpConnectorResult = { evidence: [], claims: [], byProject: {} };
   if (targets.length === 0) return result;

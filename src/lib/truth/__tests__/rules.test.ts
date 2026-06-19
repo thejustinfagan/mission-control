@@ -31,8 +31,11 @@ describe("claimStatusFromEvidence", () => {
   it("is verified with fresh passing evidence", () => {
     expect(claimStatusFromEvidence([ev({ ok: true })], NOW)).toBe("verified");
   });
-  it("is unverified with fresh non-pass/fail evidence", () => {
-    expect(claimStatusFromEvidence([ev({ ok: null })], NOW)).toBe("unverified");
+  it("is unverified with fresh failing evidence", () => {
+    expect(claimStatusFromEvidence([ev({ ok: false })], NOW)).toBe("unverified");
+  });
+  it("is unknown with fresh but uninformative evidence (ok null)", () => {
+    expect(claimStatusFromEvidence([ev({ ok: null })], NOW)).toBe("unknown");
   });
 });
 
