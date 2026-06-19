@@ -17,6 +17,10 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Mission Control",
   description: "Operational dashboard for Barry's activity feed and schedules.",
+  icons: {
+    icon: "/mc-logo.jpg",
+    apple: "/mc-logo.jpg",
+  },
 };
 
 export default function RootLayout({
