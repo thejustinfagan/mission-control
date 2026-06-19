@@ -5,7 +5,15 @@ import type { JustinAction } from "@/lib/truth/types";
 import { ExplainButton, type ExplainRecord } from "./explain-drawer";
 import { StatusPill } from "./status-pill";
 
-export function JustinQueue({ actions, onExplain }: { actions: JustinAction[]; onExplain: (record: ExplainRecord) => void }) {
+export function JustinQueue({
+  actions,
+  onSelectAction,
+  onExplain,
+}: {
+  actions: JustinAction[];
+  onSelectAction?: (action: JustinAction) => void;
+  onExplain: (record: ExplainRecord) => void;
+}) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   return (
@@ -23,7 +31,7 @@ export function JustinQueue({ actions, onExplain }: { actions: JustinAction[]; o
         const record = { id: action.id, title: action.title, status: action.urgency, evidenceIds: action.evidenceIds, claimIds: action.claimIds };
         return (
           <article key={action.id} className="rounded-2xl border border-amber-300/20 bg-amber-400/[0.04] p-4 transition hover:border-amber-200/50 hover:bg-amber-400/[0.07]">
-            <button type="button" onClick={() => onExplain(record)} className="block w-full text-left">
+            <button type="button" onClick={() => onSelectAction?.(action)} className="block w-full text-left">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-amber-200">{action.type}</p>
@@ -41,7 +49,10 @@ export function JustinQueue({ actions, onExplain }: { actions: JustinAction[]; o
                   <button
                     key={option}
                     type="button"
-                    onClick={() => setSelectedOption(`${action.title}: ${option}`)}
+                    onClick={() => {
+                      setSelectedOption(`${action.title}: ${option}`);
+                      onSelectAction?.(action);
+                    }}
                     className="rounded-full border border-amber-200/20 px-2 py-1 text-xs text-amber-100 transition hover:border-amber-100 hover:bg-amber-200/10"
                   >
                     {option}

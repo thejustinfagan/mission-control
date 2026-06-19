@@ -4,7 +4,15 @@ import type { Incident } from "@/lib/truth/types";
 import { ExplainButton, type ExplainRecord } from "./explain-drawer";
 import { StatusPill } from "./status-pill";
 
-export function IncidentsPanel({ incidents, onExplain }: { incidents: Incident[]; onExplain: (record: ExplainRecord) => void }) {
+export function IncidentsPanel({
+  incidents,
+  onSelectIncident,
+  onExplain,
+}: {
+  incidents: Incident[];
+  onSelectIncident?: (incident: Incident) => void;
+  onExplain: (record: ExplainRecord) => void;
+}) {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
@@ -15,7 +23,7 @@ export function IncidentsPanel({ incidents, onExplain }: { incidents: Incident[]
         const record = { id: incident.id, title: incident.title, status: incident.status, evidenceIds: incident.evidenceIds, claimIds: incident.claimIds };
         return (
           <article key={incident.id} className="rounded-2xl border border-red-300/20 bg-red-400/[0.04] p-4 transition hover:border-red-200/50 hover:bg-red-400/[0.07]">
-            <button type="button" onClick={() => onExplain(record)} className="block w-full text-left">
+            <button type="button" onClick={() => onSelectIncident?.(incident)} className="block w-full text-left">
               <div className="flex items-start justify-between gap-3"><h3 className="font-bold text-white">{incident.title}</h3><StatusPill status={incident.status} /></div>
               <p className="mt-1 text-xs text-red-200">{incident.severity} • {incident.affected}</p>
               <p className="mt-2 text-sm text-slate-300">{incident.symptom}</p>
