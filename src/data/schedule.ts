@@ -105,7 +105,7 @@ export const scheduledJobs: ScheduledJob[] = [
     timezone: "America/Chicago",
     enabled: true,
     category: "build",
-    description: "Continues AI Whiteboard MVP: tldraw frontend, Claude API integration, deploy to Vercel/Railway.",
+    description: "Continues AI Whiteboard MVP: tldraw frontend, Claude API integration, deploy to Railway.",
     lastStatus: "ok",
   },
 ];

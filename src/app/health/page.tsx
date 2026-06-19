@@ -5,9 +5,7 @@ export const revalidate = 0;
 
 async function getHealthData() {
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.RAILWAY_PUBLIC_DOMAIN
+    const baseUrl = process.env.RAILWAY_PUBLIC_DOMAIN
       ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
       : "http://localhost:3001";
 
