@@ -153,6 +153,26 @@ export type JustinControlType =
   | "view-artifact"
   | "explain";
 
+export type ActionDecisionStatus =
+  | "approved"
+  | "rejected"
+  | "deferred"
+  | "unblocked"
+  | "verification-requested"
+  | "assigned"
+  | "artifact-opened";
+
+export interface ActionDecision {
+  id: string;
+  actionId: string;
+  controlType: Exclude<JustinControlType, "explain">;
+  status: ActionDecisionStatus;
+  label: string;
+  title: string;
+  subject?: string;
+  decidedAt: string;
+}
+
 export interface JustinControl {
   type: JustinControlType;
   label: string;
@@ -253,6 +273,7 @@ export interface MissionControlSnapshot {
   globalStatus: GlobalStatus;
   summary: SnapshotSummary;
   freshness: FreshnessReport;
+  actionDecisions: ActionDecision[];
   justinQueue: JustinAction[];
   agents: Agent[];
   projects: ProjectStatus[];
