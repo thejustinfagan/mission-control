@@ -74,7 +74,7 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
             generatedAt={snapshot.generatedAt}
             onExplain={onExplain}
           />
-          <JustinQueue actions={snapshot.justinQueue} onExplain={onExplain} />
+          <JustinQueue actions={snapshot.justinQueue} actionDecisions={snapshot.actionDecisions} onExplain={onExplain} />
           <IncidentsPanel incidents={snapshot.incidents} onExplain={onExplain} />
           <AgentLanes agents={snapshot.agents} onExplain={onExplain} />
           <ProofCardBoard cards={snapshot.proofCards} onExplain={onExplain} />

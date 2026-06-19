@@ -18,6 +18,7 @@ describe("buildMissionControlSnapshot", () => {
       "globalStatus",
       "summary",
       "freshness",
+      "actionDecisions",
       "justinQueue",
       "agents",
       "projects",

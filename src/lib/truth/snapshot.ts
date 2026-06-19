@@ -3,6 +3,7 @@
 // /api/mission-control both consume. Output is plain serializable JSON.
 
 import type {
+  ActionDecision,
   Agent,
   Claim,
   Evidence,
@@ -23,6 +24,7 @@ import { httpProbeConnector, type HttpProbeTarget } from "./connectors/http";
 import { localPathConnector, type LocalPathTarget } from "./connectors/local";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
+import { applyActionDecisionsToQueue, readActionDecisions } from "./action-decisions";
 import { nowIso, toEpochMs } from "./time";
 import type { RegistryProject, RegistryAction } from "./registry";
 
@@ -208,6 +210,8 @@ export interface BuildOptions {
   probeTargets?: HttpProbeTarget[];
   /** Override local path probe targets. Omit to use MC_LOCAL_PATHS. */
   localTargets?: LocalPathTarget[];
+  /** Override persisted action decision store path. */
+  actionDecisionStorePath?: string;
 }
 
 export async function buildMissionControlSnapshot(
@@ -393,6 +397,13 @@ export async function buildMissionControlSnapshot(
 
   justinQueue.sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
 
+  const storedDecisions = await readActionDecisions({ path: options.actionDecisionStorePath }).catch(() => [] as ActionDecision[]);
+  const { openActions: openJustinQueue, appliedDecisions } = applyActionDecisionsToQueue(justinQueue, storedDecisions);
+  const actionDecisions = [
+    ...appliedDecisions,
+    ...storedDecisions.filter((decision) => !appliedDecisions.some((applied) => applied.id === decision.id)),
+  ];
+
   const proofCards = buildProofCards(staticResult.registry, projects, evidenceById, now);
 
   // --- Proof feed -----------------------------------------------------------
@@ -460,7 +471,7 @@ export async function buildMissionControlSnapshot(
       degraded,
       unknown,
       openIncidents,
-      justinActions: justinQueue.length,
+      justinActions: openJustinQueue.length,
       definitions: {
         totalProjects: "Projects present in the committed registry (src/data/projects.ts).",
         verifiedHealthy:
@@ -478,7 +489,8 @@ export async function buildMissionControlSnapshot(
       oldestEvidenceAt,
       newestEvidenceAt,
     },
-    justinQueue,
+    actionDecisions,
+    justinQueue: openJustinQueue,
     agents,
     projects,
     incidents,
