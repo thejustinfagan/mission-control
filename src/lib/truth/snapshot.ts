@@ -13,7 +13,10 @@ import type {
   JustinControl,
   MissionControlSnapshot,
   ProjectStatus,
+  ProofCard,
   ProofFeedItem,
+  ProofSlotId,
+  VerificationStatus,
 } from "./types";
 import { staticRegistryConnector } from "./connectors/static";
 import { httpProbeConnector, type HttpProbeTarget } from "./connectors/http";
@@ -100,6 +103,101 @@ const PRIORITY_RANK: Record<"high" | "medium" | "low", number> = {
   medium: 1,
   low: 2,
 };
+
+const REQUIRED_PROOF_SLOTS: ProofSlotId[] = [
+  "change",
+  "repo",
+  "branch",
+  "commit",
+  "tests",
+  "deploy",
+  "liveVerification",
+  "blocker",
+  "nextAction",
+];
+
+const PROOF_SLOT_LABELS: Record<ProofSlotId, string> = {
+  change: "What changed",
+  repo: "Repo / PR",
+  branch: "Branch",
+  commit: "Commit",
+  tests: "Tests run",
+  deploy: "Deploy URL / status",
+  liveVerification: "Live verification",
+  blocker: "Blocker",
+  nextAction: "Next action",
+};
+
+function proofSlotStatus(value: string | undefined, optimisticStatus: VerificationStatus = "unverified"): VerificationStatus {
+  if (!value) return "unknown";
+  if (/unknown|unverified|not proven|not wired|missing|no fresh/i.test(value)) return "unknown";
+  if (/stale/i.test(value)) return "stale";
+  return optimisticStatus;
+}
+
+function makeProofSlot(id: ProofSlotId, value: string | undefined, ref?: string, optimisticStatus: VerificationStatus = "unverified") {
+  return {
+    id,
+    label: PROOF_SLOT_LABELS[id],
+    value: value || "Unknown / not proven yet",
+    status: proofSlotStatus(value, optimisticStatus),
+    ref,
+  };
+}
+
+function buildProofCards(
+  registry: RegistryProject[],
+  projects: ProjectStatus[],
+  evidenceById: Map<string, Evidence>,
+  now: Date
+): ProofCard[] {
+  const projectById = new Map(projects.map((project) => [project.id, project]));
+  return registry.map((registryProject) => {
+    const project = projectById.get(registryProject.id);
+    const newestEvidence = project?.evidenceIds
+      .map((id) => evidenceById.get(id))
+      .filter((row): row is Evidence => Boolean(row))
+      .sort((a, b) => (toEpochMs(b.observedAt) ?? 0) - (toEpochMs(a.observedAt) ?? 0))[0];
+    const healthEvidence = project?.evidenceIds
+      .map((id) => evidenceById.get(id))
+      .find((row) => row?.kind === "browser-render" || row?.kind === "test-result");
+    const liveUrl = registryProject.liveUrl;
+    const blocker = registryProject.blockers[0];
+    const slots = {
+      change: makeProofSlot("change", newestEvidence?.summary),
+      repo: makeProofSlot("repo", registryProject.repoUrl || registryProject.localPath, registryProject.repoUrl || registryProject.localPath),
+      branch: makeProofSlot("branch", undefined),
+      commit: makeProofSlot("commit", undefined),
+      tests: makeProofSlot("tests", healthEvidence?.kind === "test-result" ? healthEvidence.summary : undefined, healthEvidence?.source.ref),
+      deploy: makeProofSlot("deploy", liveUrl ? `Registered live surface: ${liveUrl}` : undefined, liveUrl),
+      liveVerification: makeProofSlot(
+        "liveVerification",
+        healthEvidence?.kind === "browser-render" ? healthEvidence.summary : liveUrl ? "Live URL registered; browser proof not wired" : undefined,
+        healthEvidence?.source.ref || liveUrl,
+        healthEvidence?.kind === "browser-render" ? "verified" : "unknown"
+      ),
+      blocker: makeProofSlot("blocker", blocker || "No blocker recorded; still needs a fresh proof card before green"),
+      nextAction: makeProofSlot("nextAction", registryProject.justinActions[0]?.label || "Attach change, commit, tests, deploy/live URL, and PASS/FAIL proof"),
+    };
+    const hasUnknown = REQUIRED_PROOF_SLOTS.some((slot) => slots[slot].status === "unknown");
+    const hasStale = REQUIRED_PROOF_SLOTS.some((slot) => slots[slot].status === "stale");
+    const status: VerificationStatus = hasUnknown ? "unverified" : hasStale ? "stale" : "verified";
+
+    return {
+      id: `proof-card:${registryProject.id}`,
+      projectId: registryProject.id,
+      projectName: registryProject.name,
+      title: `${registryProject.name} proof card`,
+      status,
+      confidence: status === "verified" ? "high" : "low",
+      updatedAt: newestEvidence?.observedAt ?? nowIso(now),
+      requiredSlots: REQUIRED_PROOF_SLOTS,
+      slots,
+      claimIds: project?.claimIds ?? [],
+      evidenceIds: project?.evidenceIds ?? [],
+    };
+  });
+}
 
 export interface BuildOptions {
   now?: Date;
@@ -295,6 +393,8 @@ export async function buildMissionControlSnapshot(
 
   justinQueue.sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
 
+  const proofCards = buildProofCards(staticResult.registry, projects, evidenceById, now);
+
   // --- Proof feed -----------------------------------------------------------
   const proofFeed: ProofFeedItem[] = evidence
     .slice()
@@ -382,6 +482,7 @@ export async function buildMissionControlSnapshot(
     agents,
     projects,
     incidents,
+    proofCards,
     proofFeed,
     claims,
     evidence,
