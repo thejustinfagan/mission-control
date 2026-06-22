@@ -18,6 +18,8 @@ import type {
 import { staticRegistryConnector } from "./connectors/static";
 import { httpProbeConnector, type HttpProbeTarget } from "./connectors/http";
 import { localPathConnector, type LocalPathTarget } from "./connectors/local";
+import { activityConnector } from "./connectors/activity";
+import type { ActivityRow } from "../db";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
 import { nowIso, toEpochMs } from "./time";
@@ -110,6 +112,11 @@ export interface BuildOptions {
   probeTargets?: HttpProbeTarget[];
   /** Override local path probe targets. Omit to use MC_LOCAL_PATHS. */
   localTargets?: LocalPathTarget[];
+  /**
+   * Override pushed-activity rows. Omit to read from the durable store
+   * (Postgres). Pass [] to stay offline in tests.
+   */
+  activityRows?: ActivityRow[];
 }
 
 export async function buildMissionControlSnapshot(
@@ -132,16 +139,24 @@ export async function buildMissionControlSnapshot(
     claims: [] as Claim[],
     byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
   }));
+  // Pushed updates from the durable store. Testimony — shown in the proof feed,
+  // never used as project health evidence. A read failure degrades to none.
+  const activityResult = await activityConnector(now, options.activityRows).catch(() => ({
+    evidence: [] as Evidence[],
+    claims: [] as Claim[],
+  }));
 
   const evidence: Evidence[] = [
     ...staticResult.evidence,
     ...httpResult.evidence,
     ...localResult.evidence,
+    ...activityResult.evidence,
   ];
   const claims: Claim[] = [
     ...staticResult.claims,
     ...httpResult.claims,
     ...localResult.claims,
+    ...activityResult.claims,
   ];
 
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
