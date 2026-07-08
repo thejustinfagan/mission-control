@@ -69,6 +69,19 @@ function migrate(db: Database.Database) {
     );
     CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
     CREATE INDEX IF NOT EXISTS idx_tasks_updated ON tasks(updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS agent_registry_pushes (
+      project_id TEXT PRIMARY KEY,
+      pushed_at TEXT NOT NULL,
+      pushed_by TEXT,
+      payload_json TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS agent_status_snapshot (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      pushed_at TEXT NOT NULL,
+      payload_json TEXT NOT NULL
+    );
   `);
 }
 

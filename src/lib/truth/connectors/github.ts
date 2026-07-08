@@ -5,7 +5,8 @@ import type { Claim, ConnectorResult, Evidence } from "../types";
 import { claimStatusFromEvidence } from "../rules";
 import { computeFreshness } from "../ttl";
 import { nowIso } from "../time";
-import { loadRegistry, type RegistryProject } from "../registry";
+import { loadEffectiveRegistry } from "../registry-store";
+import type { RegistryProject } from "../registry";
 
 const GITHUB_TTL_SECONDS = 15 * 60; // 15 min
 const GITHUB_TIMEOUT_MS = 5000;
@@ -128,7 +129,7 @@ async function fetchRepoSnapshot(project: RegistryProject): Promise<GitHubRepoSn
 
 export async function githubConnector(now: Date = new Date()): Promise<GitHubConnectorResult> {
   const generatedAt = nowIso(now);
-  const registry = loadRegistry().filter((p) => p.repoUrl);
+  const registry = loadEffectiveRegistry().filter((p) => p.repoUrl);
   const evidence: Evidence[] = [];
   const claims: Claim[] = [];
   const byProject: GitHubConnectorResult["byProject"] = {};

@@ -8,7 +8,7 @@ import type { Claim, ConnectorResult, Evidence } from "../types";
 import { claimStatusFromEvidence } from "../rules";
 import { computeFreshness } from "../ttl";
 import { nowIso } from "../time";
-import { loadRegistry } from "../registry";
+import { loadEffectiveRegistry } from "../registry-store";
 
 export interface RenderProbeTarget {
   projectId: string;
@@ -62,7 +62,7 @@ export function configuredRenderTargets(env: NodeJS.ProcessEnv = process.env): R
 }
 
 export function registryRenderTargets(): RenderProbeTarget[] {
-  const registry = loadRegistry();
+  const registry = loadEffectiveRegistry();
   const targets: RenderProbeTarget[] = [];
   for (const project of registry) {
     if (!project.liveUrl) continue;

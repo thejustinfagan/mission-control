@@ -15,7 +15,7 @@ import type { Claim, ConnectorResult, Evidence } from "../types";
 import { claimStatusFromEvidence } from "../rules";
 import { nowIso } from "../time";
 import { computeFreshness } from "../ttl";
-import { loadRegistry } from "../registry";
+import { loadEffectiveRegistry } from "../registry-store";
 
 export interface HttpProbeTarget {
   projectId: string;
@@ -52,7 +52,7 @@ export const SUPPLEMENTAL_PROBE_TARGETS: HttpProbeTarget[] = [
 export function registryProbeTargets(
   env: NodeJS.ProcessEnv = process.env
 ): HttpProbeTarget[] {
-  const registry = loadRegistry();
+  const registry = loadEffectiveRegistry();
   const targets: HttpProbeTarget[] = [];
 
   for (const project of registry) {

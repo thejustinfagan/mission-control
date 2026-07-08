@@ -26,6 +26,7 @@ import { heartbeatConnector } from "./connectors/heartbeat";
 import { activityConnector } from "./connectors/activity";
 import { githubConnector, type GitHubConnectorResult } from "./connectors/github";
 import { renderProbeConnector } from "./connectors/render";
+import { agentPushConnector } from "./connectors/agent-push";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
 import { applyActionDecisionsToQueue, readActionDecisions } from "./action-decisions";
@@ -302,6 +303,7 @@ export async function buildMissionControlSnapshot(
         claims: [] as Claim[],
         byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
       }));
+  const agentPushResult = agentPushConnector(now, { dbPath: options.activityDbPath });
 
   const evidence: Evidence[] = [
     ...staticResult.evidence,
@@ -311,6 +313,7 @@ export async function buildMissionControlSnapshot(
     ...activityResult.evidence,
     ...githubResult.evidence,
     ...renderResult.evidence,
+    ...agentPushResult.evidence,
   ];
   const claims: Claim[] = [
     ...staticResult.claims,
@@ -320,6 +323,7 @@ export async function buildMissionControlSnapshot(
     ...activityResult.claims,
     ...githubResult.claims,
     ...renderResult.claims,
+    ...agentPushResult.claims,
   ];
 
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
@@ -374,6 +378,7 @@ export async function buildMissionControlSnapshot(
     const localRef = localResult.byProject[project.id];
     const githubRef = githubResult.byProject[project.id];
     const renderRef = renderResult.byProject[project.id];
+    const agentPushRef = agentPushResult.byProject[project.id];
     const activityIds = activityResult.byProject[project.id] ?? [];
 
     const reachEvidence = httpRef ? evidenceById.get(httpRef.evidenceId) ?? null : null;
@@ -412,6 +417,7 @@ export async function buildMissionControlSnapshot(
       githubRef ? `cl:github:commit:${project.id}` : undefined,
       githubRef ? `cl:github:ci:${project.id}` : undefined,
       renderRef?.claimId,
+      agentPushRef?.claimId,
     ].filter(Boolean) as string[];
 
     const projectEvidenceIds = [
@@ -421,6 +427,7 @@ export async function buildMissionControlSnapshot(
       githubRef?.commitEvidenceId,
       githubRef?.ciEvidenceId,
       renderRef?.evidenceId,
+      agentPushRef?.evidenceId,
       ...activityIds,
     ].filter(Boolean) as string[];
 

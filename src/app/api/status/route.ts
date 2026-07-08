@@ -1,21 +1,8 @@
 import { NextResponse } from "next/server";
+import { verifyAgentAuth } from "@/lib/truth/auth";
+import { readAgentStatusSnapshot, saveAgentStatusSnapshot } from "@/lib/truth/registry-store";
+import { appendActivity } from "@/lib/truth/activity-store";
 
-/**
- * Live Status API
- * 
- * GET  — Returns current status data
- * POST — Barry pushes updated status data
- * 
- * Uses global variable for persistence within the same Lambda instance,
- * plus falls back to a static snapshot for cold starts.
- */
-
-const AUTH_TOKEN = process.env.MC_AUTH_TOKEN || "barry-update-2026";
-
-// In-memory store (persists across warm invocations on same instance)
-let statusData: any = null;
-
-// Static fallback data embedded at build time
 const STATIC_FALLBACK = {
   timestamp: "2026-03-16T12:09:00Z",
   summary: {
@@ -194,34 +181,49 @@ function normalizeStatus(data: Record<string, unknown>, servingFallback: boolean
 }
 
 export async function GET() {
-  const servingFallback = !statusData;
-  const data = (statusData || STATIC_FALLBACK) as Record<string, unknown>;
+  const stored = readAgentStatusSnapshot();
+  const servingFallback = !stored;
+  const data = (stored || STATIC_FALLBACK) as Record<string, unknown>;
   return NextResponse.json(normalizeStatus(data, servingFallback));
 }
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "");
-
-  if (token !== AUTH_TOKEN) {
+  if (!verifyAgentAuth(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    const previous = statusData || STATIC_FALLBACK;
+    const previous = readAgentStatusSnapshot() || STATIC_FALLBACK;
 
-    statusData = {
+    const merged = {
       ...previous,
       ...body,
-      tasks: Array.isArray(body?.tasks) ? body.tasks : previous.tasks,
-      schedule: Array.isArray(body?.schedule) ? body.schedule : previous.schedule,
-      activities: Array.isArray(body?.activities) ? body.activities : previous.activities,
+      tasks: Array.isArray(body?.tasks) ? body.tasks : (previous as { tasks?: unknown }).tasks,
+      schedule: Array.isArray(body?.schedule) ? body.schedule : (previous as { schedule?: unknown }).schedule,
+      activities: Array.isArray(body?.activities) ? body.activities : (previous as { activities?: unknown }).activities,
       timestamp: new Date().toISOString(),
       pushedBy: "barry",
     };
 
-    return NextResponse.json({ success: true, timestamp: statusData.timestamp });
+    saveAgentStatusSnapshot(merged);
+
+    // Ingest pushed activities into SQLite proof feed
+    if (Array.isArray(body?.activities)) {
+      for (const act of body.activities.slice(0, 20)) {
+        if (!act?.description || !act?.project) continue;
+        await appendActivity({
+          actionType: act.type || act.actionType || "work",
+          description: act.description,
+          project: act.project,
+          status: act.status === "failed" ? "failed" : "success",
+          agentId: "barry",
+          timestamp: act.time || act.timestamp,
+        }).catch(() => undefined);
+      }
+    }
+
+    return NextResponse.json({ success: true, timestamp: merged.timestamp });
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

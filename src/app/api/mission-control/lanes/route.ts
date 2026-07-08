@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { loadRegistry } from "@/lib/truth/registry";
+import { loadEffectiveRegistry } from "@/lib/truth/registry-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET() {
-  const registry = loadRegistry();
+  const registry = loadEffectiveRegistry();
 
   const monetization = registry
     .filter((p) => p.monetization)

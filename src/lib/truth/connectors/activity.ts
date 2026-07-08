@@ -5,7 +5,7 @@ import type { Claim, ConnectorResult, Evidence } from "../types";
 import { computeFreshness } from "../ttl";
 import { nowIso } from "../time";
 import { readActivities, type ActivityRecord } from "../activity-store";
-import { loadRegistry } from "../registry";
+import { loadEffectiveRegistry } from "../registry-store";
 
 const ACTIVITY_TTL_SECONDS = 60 * 60 * 24; // 24h — activity stays visible in feed
 const MAX_ACTIVITIES = 40;
@@ -31,7 +31,7 @@ export async function activityConnector(
 ): Promise<ActivityConnectorResult> {
   const generatedAt = nowIso(now);
   const activities = await readActivities({ dbPath: options.dbPath });
-  const registry = loadRegistry();
+  const registry = loadEffectiveRegistry();
   const registryIds = new Set(registry.map((p) => p.id));
 
   const evidence: Evidence[] = [];

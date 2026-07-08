@@ -8,7 +8,8 @@
 import type { ConnectorResult, Claim, Evidence } from "../types";
 import { computeFreshness } from "../ttl";
 import { nowIso } from "../time";
-import { loadRegistry, type RegistryProject } from "../registry";
+import { loadEffectiveRegistry } from "../registry-store";
+import type { RegistryProject } from "../registry";
 
 // Registry existence is re-confirmed every time we read the committed file, so
 // its observation timestamp is "now". A generous TTL keeps identity evidence
@@ -30,7 +31,7 @@ export interface StaticConnectorResult extends ConnectorResult {
 export function staticRegistryConnector(
   now: Date = new Date()
 ): StaticConnectorResult {
-  const registry = loadRegistry();
+  const registry = loadEffectiveRegistry();
   const generatedAt = nowIso(now);
   const evidence: Evidence[] = [];
   const claims: Claim[] = [];
@@ -54,7 +55,7 @@ export function staticRegistryConnector(
       observedAt: generatedAt,
       ttlSeconds: REGISTRY_TTL_SECONDS,
       summary: `${project.name} is listed in the committed project registry`,
-      detail: `Registry status: "${project.claimedStatus}". Last worked (per registry): ${project.lastWorked}. This is metadata, not a live health check.`,
+      detail: `Registry status: "${project.claimedStatus}". Last worked (per registry): ${project.lastWorked}. Static file + any agent push via /api/agents/feed.`,
       ok: null,
       raw: {
         id: project.id,

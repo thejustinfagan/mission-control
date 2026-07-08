@@ -104,17 +104,17 @@ NVIDIA NIM (`integrate.api.nvidia.com`) can power:
 
 | Pillar | Score | Notes |
 |--------|-------|-------|
-| Auto-capture | 6/10 | SQLite + activity API; Barry must POST |
+| Auto-capture | 9/10 | Unified `/api/agents/feed` — heartbeat + activity + registry |
 | Auto-sweep | 7/10 | Nightly sweep API + AI critique panel |
 | Auto-summarize | 7/10 | AI briefing + sweep |
 | Auto-escalate | 6/10 | Justin queue works |
 | Auto-improve | 5/10 | OS critique in nightly sweep |
 | Truth/evidence | 9/10 | Render probes + heartbeat + GitHub + multi-URL |
 | Mobile | 8/10 | Task board quick-add, drag/drop, tap-to-move |
-| **Overall north-star proximity** | **~75%** | Full OS surface; Barry must feed + cron |
+| **Overall north-star proximity** | **~85%** | Barry feed loop wired; run scripts on cron |
 
 ## Bottom Line
 
-Mission Control has an excellent **truth doctrine** and **cockpit UI**, but it is still a **manual dashboard** wearing a **verification framework**. The north star requires the **agents to feed it** and **AI to summarize/steer** — not Justin editing TypeScript files.
+Mission Control has an excellent **truth doctrine** and **cockpit UI**. The **Barry feed loop** (`POST /api/agents/feed`, `scripts/barry-feed-mc.sh`) closes the nervous system — agents update MC automatically. See `protocols/barry-feeds-mission-control.md`.
 
-This PR adds the first AI layer: an NVIDIA-powered executive briefing that reads the live snapshot and answers the operating-principles success questions. Next priority: wire Barry's heartbeat and activity push so the briefing has real signal instead of registry testimony.
+**Remaining:** Barry must actually run the scripts on cron. Justin sets `MC_AUTH_TOKEN` on Railway and adds heartbeat + sweep crons.

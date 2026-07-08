@@ -187,11 +187,19 @@ echo "Pushing live status to $MC_URL..."
 HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' \
   -X POST "$MC_URL/api/status" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $MC_TOKEN" \
+  -H "Authorization: Bearer ${MC_AUTH_TOKEN:-$MC_TOKEN}" \
   -d @"$PAYLOAD_FILE")
 
 if [ "$HTTP_CODE" = "200" ]; then
   echo "✅ Status pushed successfully (HTTP $HTTP_CODE)"
+  # Also feed heartbeat + activity via unified feed API
+  if [ -x "$(dirname "$0")/barry-feed-mc.sh" ]; then
+    MC_AUTH_TOKEN="${MC_AUTH_TOKEN:-$MC_TOKEN}" \
+      "$(dirname "$0")/barry-feed-mc.sh" \
+      --heartbeat-only \
+      --task "Live status push from git scan" \
+      --project mission-control || true
+  fi
   echo "Data summary:"
   python3 -c "
 import json
