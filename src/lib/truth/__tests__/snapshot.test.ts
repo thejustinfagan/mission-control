@@ -5,14 +5,14 @@ const NOW = new Date("2026-06-19T12:00:00Z");
 
 describe("buildMissionControlSnapshot", () => {
   it("produces a fully serializable JSON snapshot", async () => {
-    const snapshot = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const snapshot = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     const roundTripped = JSON.parse(JSON.stringify(snapshot));
     expect(roundTripped.generatedAt).toBe(snapshot.generatedAt);
     expect(roundTripped).toEqual(snapshot);
   });
 
   it("exposes every required top-level field", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     for (const key of [
       "generatedAt",
       "globalStatus",
@@ -33,7 +33,7 @@ describe("buildMissionControlSnapshot", () => {
   });
 
   it("renders every agent as Unknown (no heartbeat), never Online", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     expect(s.agents.length).toBeGreaterThan(0);
     for (const agent of s.agents) {
       expect(agent.status).toBe("unknown");
@@ -42,19 +42,19 @@ describe("buildMissionControlSnapshot", () => {
   });
 
   it("never contains the string 'Barry Online' without fresh verified evidence", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     const json = JSON.stringify(s);
     // No Barry heartbeat evidence exists, so the literal must never appear.
     expect(json).not.toMatch(/Barry Online/i);
   });
 
   it("never claims to be 'Live from STATUS.md'", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     expect(JSON.stringify(s)).not.toMatch(/Live from STATUS\.md/i);
   });
 
   it("does not report any project as verified healthy from registry data alone", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     expect(s.summary.verifiedHealthy).toBe(0);
     for (const p of s.projects) {
       expect(p.verified).toBe(false);
@@ -63,12 +63,12 @@ describe("buildMissionControlSnapshot", () => {
   });
 
   it("global status is not all_clear when evidence is unknown/stale", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     expect(s.globalStatus.level).not.toBe("all_clear");
   });
 
   it("every project, agent, incident, and action references claim/evidence ids", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     for (const p of s.projects) {
       expect(p.claimIds.length).toBeGreaterThan(0);
       expect(p.evidenceIds.length).toBeGreaterThan(0);
@@ -87,7 +87,7 @@ describe("buildMissionControlSnapshot", () => {
   });
 
   it("has no undefined or blank-titled entries", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     for (const p of s.projects) expect(p.name.trim().length).toBeGreaterThan(0);
     for (const act of s.justinQueue) expect(act.title.trim().length).toBeGreaterThan(0);
     for (const inc of s.incidents) expect(inc.title.trim().length).toBeGreaterThan(0);
@@ -95,7 +95,7 @@ describe("buildMissionControlSnapshot", () => {
   });
 
   it("creates proof cards with the required autonomous-run proof slots", async () => {
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     const projectIds = new Set(s.projects.map((p) => p.id));
 
     expect(s.proofCards.length).toBe(s.projects.length);
@@ -124,7 +124,7 @@ describe("buildMissionControlSnapshot", () => {
     // Registry existence evidence is re-observed on every read, so it never goes
     // stale (it only proves the project EXISTS). The truth that keeps us off
     // green is the absence of fresh HEALTH evidence: unknown health claims.
-    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [] });
+    const s = await buildMissionControlSnapshot({ now: NOW, probeTargets: [], localTargets: [], skipGithub: true });
     expect(s.freshness.unknownClaims).toBeGreaterThan(0);
     const healthClaims = s.claims.filter((c) => c.id.startsWith("cl:health:"));
     expect(healthClaims.length).toBeGreaterThan(0);

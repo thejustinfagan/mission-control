@@ -22,6 +22,9 @@ import type {
 import { staticRegistryConnector } from "./connectors/static";
 import { httpProbeConnector, type HttpProbeTarget } from "./connectors/http";
 import { localPathConnector, type LocalPathTarget } from "./connectors/local";
+import { heartbeatConnector } from "./connectors/heartbeat";
+import { activityConnector } from "./connectors/activity";
+import { githubConnector, type GitHubConnectorResult } from "./connectors/github";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
 import { applyActionDecisionsToQueue, readActionDecisions } from "./action-decisions";
@@ -151,6 +154,8 @@ function buildProofCards(
   registry: RegistryProject[],
   projects: ProjectStatus[],
   evidenceById: Map<string, Evidence>,
+  githubByProject: GitHubConnectorResult["byProject"],
+  activityByProject: Record<string, string[]>,
   now: Date
 ): ProofCard[] {
   const projectById = new Map(projects.map((project) => [project.id, project]));
@@ -163,14 +168,37 @@ function buildProofCards(
     const healthEvidence = project?.evidenceIds
       .map((id) => evidenceById.get(id))
       .find((row) => row?.kind === "browser-render" || row?.kind === "test-result");
+
+    const github = githubByProject[registryProject.id];
+    const commitEv = github ? evidenceById.get(github.commitEvidenceId) : undefined;
+    const ciEv = github ? evidenceById.get(github.ciEvidenceId) : undefined;
+    const latestActivity = (activityByProject[registryProject.id] ?? [])
+      .map((id) => evidenceById.get(id))
+      .filter((row): row is Evidence => Boolean(row))
+      .sort((a, b) => (toEpochMs(b.observedAt) ?? 0) - (toEpochMs(a.observedAt) ?? 0))[0];
+
     const liveUrl = registryProject.liveUrl;
     const blocker = registryProject.blockers[0];
     const slots = {
-      change: makeProofSlot("change", newestEvidence?.summary),
+      change: makeProofSlot(
+        "change",
+        latestActivity?.summary ?? commitEv?.summary ?? newestEvidence?.summary,
+        latestActivity?.source.ref ?? commitEv?.source.ref
+      ),
       repo: makeProofSlot("repo", registryProject.repoUrl || registryProject.localPath, registryProject.repoUrl || registryProject.localPath),
-      branch: makeProofSlot("branch", undefined),
-      commit: makeProofSlot("commit", undefined),
-      tests: makeProofSlot("tests", healthEvidence?.kind === "test-result" ? healthEvidence.summary : undefined, healthEvidence?.source.ref),
+      branch: makeProofSlot("branch", github?.snapshot.defaultBranch, registryProject.repoUrl),
+      commit: makeProofSlot(
+        "commit",
+        github ? `${github.snapshot.latestSha}: ${github.snapshot.latestMessage}` : undefined,
+        github ? `https://github.com/${github.snapshot.owner}/${github.snapshot.repo}/commit/${github.snapshot.latestSha}` : undefined,
+        github ? "unverified" : "unknown"
+      ),
+      tests: makeProofSlot(
+        "tests",
+        ciEv?.summary ?? (healthEvidence?.kind === "test-result" ? healthEvidence.summary : undefined),
+        ciEv?.source.ref ?? healthEvidence?.source.ref,
+        ciEv?.ok === true ? "verified" : ciEv?.ok === false ? "unverified" : "unknown"
+      ),
       deploy: makeProofSlot("deploy", liveUrl ? `Registered live surface: ${liveUrl}` : undefined, liveUrl),
       liveVerification: makeProofSlot(
         "liveVerification",
@@ -212,6 +240,10 @@ export interface BuildOptions {
   localTargets?: LocalPathTarget[];
   /** Override persisted action decision store path. */
   actionDecisionStorePath?: string;
+  heartbeatStorePath?: string;
+  activityStorePath?: string;
+  /** Skip GitHub API calls (used by tests to stay offline). */
+  skipGithub?: boolean;
 }
 
 export async function buildMissionControlSnapshot(
@@ -234,49 +266,83 @@ export async function buildMissionControlSnapshot(
     claims: [] as Claim[],
     byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
   }));
+  const heartbeatResult = await heartbeatConnector(now, {
+    storePath: options.heartbeatStorePath,
+  }).catch(() => ({
+    evidence: [] as Evidence[],
+    claims: [] as Claim[],
+    byAgent: {} as Record<string, { evidenceId: string; claimId: string; record: { observedAt: string } }>,
+  }));
+  const activityResult = await activityConnector(now, {
+    storePath: options.activityStorePath,
+  }).catch(() => ({
+    evidence: [] as Evidence[],
+    claims: [] as Claim[],
+    byProject: {} as Record<string, string[]>,
+  }));
+  const githubResult = options.skipGithub
+    ? { evidence: [] as Evidence[], claims: [] as Claim[], byProject: {} as GitHubConnectorResult["byProject"] }
+    : await githubConnector(now).catch(() => ({
+        evidence: [] as Evidence[],
+        claims: [] as Claim[],
+        byProject: {} as GitHubConnectorResult["byProject"],
+      }));
 
   const evidence: Evidence[] = [
     ...staticResult.evidence,
     ...httpResult.evidence,
     ...localResult.evidence,
+    ...heartbeatResult.evidence,
+    ...activityResult.evidence,
+    ...githubResult.evidence,
   ];
   const claims: Claim[] = [
     ...staticResult.claims,
     ...httpResult.claims,
     ...localResult.claims,
+    ...heartbeatResult.claims,
+    ...activityResult.claims,
+    ...githubResult.claims,
   ];
 
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
 
   // --- Agents ---------------------------------------------------------------
   const agents: Agent[] = KNOWN_AGENTS.map(({ id, name, role }) => {
-    // No heartbeat evidence source exists, so status is Unknown by design.
-    const heartbeat: Evidence | null = null;
+    const heartbeatRef = heartbeatResult.byAgent[id];
+    const heartbeat = heartbeatRef ? evidenceById.get(heartbeatRef.evidenceId) ?? null : null;
+    const heartbeatClaim = heartbeatResult.claims.find((c) => c.subject === `agent:${id}`);
     const { status, label } = deriveAgentStatus(heartbeat, now);
-    const claimId = `cl:agent:${id}`;
-    const agentClaim: Claim = {
-      id: claimId,
-      subject: `agent:${id}`,
-      statement: `${name} status: ${label}`,
-      status: status === "online" ? "verified" : "unknown",
-      confidence: status === "online" ? "medium" : "none",
-      evidenceIds: heartbeat ? [(heartbeat as Evidence).id] : [],
-      freshness: computeFreshness(null, null, now),
-      definition:
-        "Agent status comes only from a fresh heartbeat. No heartbeat = Unknown, never Online.",
-      generatedAt,
-    };
-    claims.push(agentClaim);
+    const claimId = heartbeatClaim?.id ?? `cl:agent:${id}`;
+
+    if (!heartbeatClaim) {
+      const agentClaim: Claim = {
+        id: claimId,
+        subject: `agent:${id}`,
+        statement: `${name} status: ${label}`,
+        status: "unknown",
+        confidence: "none",
+        evidenceIds: [],
+        freshness: computeFreshness(null, null, now),
+        definition:
+          "Agent status comes only from a fresh heartbeat. No heartbeat = Unknown, never Online.",
+        generatedAt,
+      };
+      claims.push(agentClaim);
+    }
+
     return {
       id,
       name,
       role,
       status,
       statusLabel: label,
-      lastHeartbeatAt: null,
-      freshness: computeFreshness(null, null, now),
+      lastHeartbeatAt: heartbeat?.observedAt ?? null,
+      freshness: heartbeat
+        ? computeFreshness(heartbeat.observedAt, heartbeat.ttlSeconds, now)
+        : computeFreshness(null, null, now),
       claimIds: [claimId],
-      evidenceIds: [],
+      evidenceIds: heartbeat ? [heartbeat.id] : [],
     };
   });
 
@@ -289,6 +355,8 @@ export async function buildMissionControlSnapshot(
     const refs = staticResult.byProject[project.id];
     const httpRef = httpResult.byProject[project.id];
     const localRef = localResult.byProject[project.id];
+    const githubRef = githubResult.byProject[project.id];
+    const activityIds = activityResult.byProject[project.id] ?? [];
 
     const reachEvidence = httpRef ? evidenceById.get(httpRef.evidenceId) ?? null : null;
 
@@ -321,12 +389,17 @@ export async function buildMissionControlSnapshot(
       ...refs.blockerClaimIds,
       httpRef?.claimId,
       localRef?.claimId,
+      githubRef ? `cl:github:commit:${project.id}` : undefined,
+      githubRef ? `cl:github:ci:${project.id}` : undefined,
     ].filter(Boolean) as string[];
 
     const projectEvidenceIds = [
       refs.existenceEvidenceId,
       httpRef?.evidenceId,
       localRef?.evidenceId,
+      githubRef?.commitEvidenceId,
+      githubRef?.ciEvidenceId,
+      ...activityIds,
     ].filter(Boolean) as string[];
 
     const links: { label: string; url: string }[] = [];
@@ -404,7 +477,14 @@ export async function buildMissionControlSnapshot(
     ...storedDecisions.filter((decision) => !appliedDecisions.some((applied) => applied.id === decision.id)),
   ];
 
-  const proofCards = buildProofCards(staticResult.registry, projects, evidenceById, now);
+  const proofCards = buildProofCards(
+    staticResult.registry,
+    projects,
+    evidenceById,
+    githubResult.byProject,
+    activityResult.byProject,
+    now
+  );
 
   // --- Proof feed -----------------------------------------------------------
   const proofFeed: ProofFeedItem[] = evidence

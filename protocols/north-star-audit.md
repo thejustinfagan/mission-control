@@ -72,10 +72,10 @@ Executive summary             Raw metrics only ❌           AI briefing (this P
 
 ### Phase 1 — Close the loop (highest ROI)
 
-1. **Barry heartbeat connector** — POST `/api/agents/heartbeat` every 30 min; wire `agent-heartbeat` evidence
-2. **Activity auto-capture** — Barry logs every action to `/api/activities`; surface in proof feed
-3. **GitHub connector** — Pull latest commit, branch, CI status per registered repo → fill proof card slots
-4. **NVIDIA AI executive briefing** — Daily auto-summarize snapshot against the 9 success questions *(started in this PR)*
+1. **Barry heartbeat connector** — POST `/api/agents/heartbeat` every 30 min; wire `agent-heartbeat` evidence ✅ *shipped*
+2. **Activity auto-capture** — Barry logs every action to `/api/activities`; surface in proof feed ✅ *shipped*
+3. **GitHub connector** — Pull latest commit, branch, CI status per registered repo → fill proof card slots ✅ *shipped*
+4. **NVIDIA AI executive briefing** — Daily auto-summarize snapshot against the 9 success questions ✅ *shipped*
 
 ### Phase 2 — Automation
 
@@ -104,14 +104,14 @@ NVIDIA NIM (`integrate.api.nvidia.com`) can power:
 
 | Pillar | Score | Notes |
 |--------|-------|-------|
-| Auto-capture | 1/10 | API exists, no pipeline |
+| Auto-capture | 5/10 | Activity API + store wired; Barry must POST |
 | Auto-sweep | 0/10 | Not built |
-| Auto-summarize | 2/10 | AI briefing starts this |
-| Auto-escalate | 6/10 | Justin queue works; registry-driven |
+| Auto-summarize | 6/10 | AI briefing live |
+| Auto-escalate | 6/10 | Justin queue works |
 | Auto-improve | 0/10 | No meta-critique loop |
-| Truth/evidence | 8/10 | Strong doctrine, thin evidence |
+| Truth/evidence | 8/10 | Heartbeat + GitHub + activity connectors |
 | Mobile | 5/10 | Responsive, not steering-optimized |
-| **Overall north-star proximity** | **~25%** | Good skeleton, missing the nervous system |
+| **Overall north-star proximity** | **~45%** | Nervous system wired; needs Barry to feed it |
 
 ## Bottom Line
 
