@@ -79,9 +79,9 @@ Executive summary             Raw metrics only ❌           AI briefing (this P
 
 ### Phase 2 — Automation
 
-5. **Nightly sweep cron** — Railway cron or Barry heartbeat triggers repo review + AI critique
-6. **Convex or D1** — Replace static task/activity files with real persistence
-7. **Probe all live URLs** — Extend `MC_PROBE_URLS` to Fleet Intel, License Reminders, Battle Dinghy, etc.
+5. **Nightly sweep cron** — Railway cron or Barry heartbeat triggers repo review + AI critique ✅ *shipped*
+6. **SQLite persistence** — Heartbeats, activities, decisions, sweeps in one DB ✅ *shipped*
+7. **Probe all live URLs** — Registry liveUrls + fleet-intel + MC /api/status ✅ *shipped*
 
 ### Phase 3 — Full operating system
 
@@ -104,14 +104,14 @@ NVIDIA NIM (`integrate.api.nvidia.com`) can power:
 
 | Pillar | Score | Notes |
 |--------|-------|-------|
-| Auto-capture | 5/10 | Activity API + store wired; Barry must POST |
-| Auto-sweep | 0/10 | Not built |
-| Auto-summarize | 6/10 | AI briefing live |
+| Auto-capture | 6/10 | SQLite + activity API; Barry must POST |
+| Auto-sweep | 7/10 | Nightly sweep API + AI critique panel |
+| Auto-summarize | 7/10 | AI briefing + sweep |
 | Auto-escalate | 6/10 | Justin queue works |
-| Auto-improve | 0/10 | No meta-critique loop |
-| Truth/evidence | 8/10 | Heartbeat + GitHub + activity connectors |
+| Auto-improve | 5/10 | OS critique in nightly sweep |
+| Truth/evidence | 9/10 | Heartbeat + GitHub + activity + multi-URL probes |
 | Mobile | 5/10 | Responsive, not steering-optimized |
-| **Overall north-star proximity** | **~45%** | Nervous system wired; needs Barry to feed it |
+| **Overall north-star proximity** | **~60%** | Automation layer live; Barry must feed + cron sweep |
 
 ## Bottom Line
 

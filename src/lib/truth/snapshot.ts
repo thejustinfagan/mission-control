@@ -239,9 +239,9 @@ export interface BuildOptions {
   /** Override local path probe targets. Omit to use MC_LOCAL_PATHS. */
   localTargets?: LocalPathTarget[];
   /** Override persisted action decision store path. */
-  actionDecisionStorePath?: string;
-  heartbeatStorePath?: string;
-  activityStorePath?: string;
+  actionDecisionDbPath?: string;
+  heartbeatDbPath?: string;
+  activityDbPath?: string;
   /** Skip GitHub API calls (used by tests to stay offline). */
   skipGithub?: boolean;
 }
@@ -267,14 +267,14 @@ export async function buildMissionControlSnapshot(
     byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
   }));
   const heartbeatResult = await heartbeatConnector(now, {
-    storePath: options.heartbeatStorePath,
+    dbPath: options.heartbeatDbPath,
   }).catch(() => ({
     evidence: [] as Evidence[],
     claims: [] as Claim[],
     byAgent: {} as Record<string, { evidenceId: string; claimId: string; record: { observedAt: string } }>,
   }));
   const activityResult = await activityConnector(now, {
-    storePath: options.activityStorePath,
+    dbPath: options.activityDbPath,
   }).catch(() => ({
     evidence: [] as Evidence[],
     claims: [] as Claim[],
@@ -470,7 +470,7 @@ export async function buildMissionControlSnapshot(
 
   justinQueue.sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority]);
 
-  const storedDecisions = await readActionDecisions({ path: options.actionDecisionStorePath }).catch(() => [] as ActionDecision[]);
+  const storedDecisions = await readActionDecisions({ dbPath: options.actionDecisionDbPath }).catch(() => [] as ActionDecision[]);
   const { openActions: openJustinQueue, appliedDecisions } = applyActionDecisionsToQueue(justinQueue, storedDecisions);
   const actionDecisions = [
     ...appliedDecisions,

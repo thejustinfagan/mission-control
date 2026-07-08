@@ -20,10 +20,10 @@ export interface HeartbeatConnectorResult extends ConnectorResult {
 
 export async function heartbeatConnector(
   now: Date = new Date(),
-  options: { storePath?: string } = {}
+  options: { dbPath?: string } = {}
 ): Promise<HeartbeatConnectorResult> {
   const generatedAt = nowIso(now);
-  const records = await readHeartbeats({ path: options.storePath });
+  const records = await readHeartbeats({ dbPath: options.dbPath });
   const latest = latestHeartbeatsByAgent(records);
 
   const evidence: Evidence[] = [];

@@ -12,6 +12,7 @@ import { ProofCardBoard } from "./proof-card-board";
 import { ProofFeed } from "./proof-feed";
 import { ProjectStateGrid } from "./project-state-grid";
 import { ExecutiveBriefingPanel } from "./executive-briefing";
+import { NightlySweepPanel } from "./nightly-sweep-panel";
 import type { ExplainRequest } from "./explain-types";
 
 const NAV_PAGES = [
@@ -69,6 +70,7 @@ export function TruthCockpit({ snapshot }: { snapshot: MissionControlSnapshot })
         {/* Above the fold: briefing, status, queue, risks, agents, proof */}
         <div className="space-y-3">
           <ExecutiveBriefingPanel />
+          <NightlySweepPanel />
           <GlobalStatusCard
             globalStatus={snapshot.globalStatus}
             summary={snapshot.summary}

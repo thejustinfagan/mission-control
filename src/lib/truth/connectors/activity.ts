@@ -27,10 +27,10 @@ export interface ActivityConnectorResult extends ConnectorResult {
 
 export async function activityConnector(
   now: Date = new Date(),
-  options: { storePath?: string } = {}
+  options: { dbPath?: string } = {}
 ): Promise<ActivityConnectorResult> {
   const generatedAt = nowIso(now);
-  const activities = await readActivities({ path: options.storePath });
+  const activities = await readActivities({ dbPath: options.dbPath });
   const registry = loadRegistry();
   const registryIds = new Set(registry.map((p) => p.id));
 

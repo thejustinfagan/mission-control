@@ -1,9 +1,8 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { getDb } from "@/lib/db/sqlite";
 import type { ActionDecision, ActionDecisionStatus, JustinAction, JustinControlType } from "./types";
 
 type StoreOptions = {
-  path?: string;
+  dbPath?: string;
   now?: Date;
 };
 
@@ -15,7 +14,6 @@ type RecordInput = {
   subject?: string;
 };
 
-const DEFAULT_STORE_PATH = "/tmp/mission-control-action-decisions.json";
 const RESOLVING_STATUSES = new Set<ActionDecisionStatus>([
   "approved",
   "rejected",
@@ -24,10 +22,6 @@ const RESOLVING_STATUSES = new Set<ActionDecisionStatus>([
   "verification-requested",
   "assigned",
 ]);
-
-function storePath(path?: string) {
-  return path || process.env.MC_ACTION_DECISIONS_PATH || DEFAULT_STORE_PATH;
-}
 
 function statusFor(controlType: Exclude<JustinControlType, "explain">): ActionDecisionStatus {
   switch (controlType) {
@@ -48,25 +42,43 @@ function statusFor(controlType: Exclude<JustinControlType, "explain">): ActionDe
   }
 }
 
+function rowToDecision(row: {
+  id: string;
+  action_id: string;
+  control_type: string;
+  status: string;
+  label: string;
+  title: string;
+  subject: string | null;
+  decided_at: string;
+}): ActionDecision {
+  return {
+    id: row.id,
+    actionId: row.action_id,
+    controlType: row.control_type as Exclude<JustinControlType, "explain">,
+    status: row.status as ActionDecisionStatus,
+    label: row.label,
+    title: row.title,
+    subject: row.subject ?? undefined,
+    decidedAt: row.decided_at,
+  };
+}
+
 export async function readActionDecisions(options: StoreOptions = {}): Promise<ActionDecision[]> {
-  try {
-    const raw = await readFile(storePath(options.path), "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
+  const db = getDb(options.dbPath);
+  const rows = db
+    .prepare(
+      `SELECT id, action_id, control_type, status, label, title, subject, decided_at
+       FROM action_decisions ORDER BY decided_at DESC`
+    )
+    .all() as Parameters<typeof rowToDecision>[0][];
+  return rows.map(rowToDecision);
 }
 
-async function writeActionDecisions(decisions: ActionDecision[], options: StoreOptions = {}) {
-  const path = storePath(options.path);
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(decisions, null, 2), "utf8");
-}
-
-export async function recordActionDecision(input: RecordInput, options: StoreOptions = {}): Promise<ActionDecision> {
-  const decisions = await readActionDecisions(options);
+export async function recordActionDecision(
+  input: RecordInput,
+  options: StoreOptions = {}
+): Promise<ActionDecision> {
   const decision: ActionDecision = {
     id: `decision:${input.actionId}`,
     actionId: input.actionId,
@@ -77,14 +89,31 @@ export async function recordActionDecision(input: RecordInput, options: StoreOpt
     subject: input.subject,
     decidedAt: (options.now || new Date()).toISOString(),
   };
-  const next = [decision, ...decisions.filter((existing) => existing.actionId !== input.actionId)];
-  await writeActionDecisions(next, options);
+
+  const db = getDb(options.dbPath);
+  db.prepare(`DELETE FROM action_decisions WHERE action_id = ?`).run(input.actionId);
+  db.prepare(
+    `INSERT INTO action_decisions (id, action_id, control_type, status, label, title, subject, decided_at)
+     VALUES (@id, @actionId, @controlType, @status, @label, @title, @subject, @decidedAt)`
+  ).run({
+    id: decision.id,
+    actionId: decision.actionId,
+    controlType: decision.controlType,
+    status: decision.status,
+    label: decision.label,
+    title: decision.title,
+    subject: decision.subject ?? null,
+    decidedAt: decision.decidedAt,
+  });
+
   return decision;
 }
 
 export function applyActionDecisionsToQueue(actions: JustinAction[], decisions: ActionDecision[]) {
   const resolvingByActionId = new Map(
-    decisions.filter((decision) => RESOLVING_STATUSES.has(decision.status)).map((decision) => [decision.actionId, decision])
+    decisions
+      .filter((decision) => RESOLVING_STATUSES.has(decision.status))
+      .map((decision) => [decision.actionId, decision])
   );
   const openActions = actions.filter((action) => !resolvingByActionId.has(action.id));
   const appliedDecisions = actions

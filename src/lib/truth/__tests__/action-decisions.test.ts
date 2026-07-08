@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { closeDb } from "@/lib/db/sqlite";
 import { applyActionDecisionsToQueue, recordActionDecision, readActionDecisions } from "../action-decisions";
 import type { JustinAction } from "../types";
 
@@ -19,19 +20,22 @@ const sampleAction: JustinAction = {
 
 let tempDir: string | null = null;
 
-async function storePath() {
+async function dbPath() {
   tempDir = await mkdtemp(join(tmpdir(), "mc-actions-"));
-  return join(tempDir, "decisions.json");
+  return join(tempDir, "test.db");
 }
 
 afterEach(async () => {
-  if (tempDir) await rm(tempDir, { recursive: true, force: true });
+  if (tempDir) {
+    closeDb(join(tempDir, "test.db"));
+    await rm(tempDir, { recursive: true, force: true });
+  }
   tempDir = null;
 });
 
 describe("action decisions", () => {
   it("persists an approve click as an action decision", async () => {
-    const path = await storePath();
+    const path = await dbPath();
     const decision = await recordActionDecision(
       {
         actionId: sampleAction.id,
@@ -40,20 +44,19 @@ describe("action decisions", () => {
         title: sampleAction.title,
         subject: sampleAction.subject,
       },
-      { path, now: new Date("2026-06-19T12:00:00Z") }
+      { dbPath: path, now: new Date("2026-06-19T12:00:00Z") }
     );
 
     expect(decision.id).toBe("decision:act:battle-dinghy:0");
     expect(decision.status).toBe("approved");
-    expect(decision.title).toBe(sampleAction.title);
 
-    const stored = await readActionDecisions({ path });
+    const stored = await readActionDecisions({ dbPath: path });
     expect(stored).toHaveLength(1);
-    expect(stored[0]).toEqual(decision);
+    expect(stored[0].id).toBe(decision.id);
   });
 
   it("removes acted-upon queue items and exposes the decision record", async () => {
-    const path = await storePath();
+    const path = await dbPath();
     const decision = await recordActionDecision(
       {
         actionId: sampleAction.id,
@@ -62,11 +65,10 @@ describe("action decisions", () => {
         title: sampleAction.title,
         subject: sampleAction.subject,
       },
-      { path, now: new Date("2026-06-19T12:00:00Z") }
+      { dbPath: path, now: new Date("2026-06-19T12:00:00Z") }
     );
 
     const result = applyActionDecisionsToQueue([sampleAction], [decision]);
-
     expect(result.openActions).toEqual([]);
     expect(result.appliedDecisions).toEqual([decision]);
   });

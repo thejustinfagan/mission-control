@@ -1,5 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
+import { getDb, getDbPath } from "@/lib/db/sqlite";
 
 export interface AgentHeartbeatRecord {
   agentId: string;
@@ -9,34 +8,39 @@ export interface AgentHeartbeatRecord {
   metadata?: Record<string, unknown>;
 }
 
-type StoreOptions = { path?: string };
+type StoreOptions = { dbPath?: string };
 
-const DEFAULT_STORE_PATH = "/tmp/mission-control-heartbeats.json";
 const KNOWN_AGENT_IDS = new Set(["barry", "harry"]);
-
-function storePath(path?: string) {
-  return path || process.env.MC_HEARTBEAT_STORE_PATH || DEFAULT_STORE_PATH;
-}
 
 export function isKnownAgentId(agentId: string): boolean {
   return KNOWN_AGENT_IDS.has(agentId);
 }
 
-export async function readHeartbeats(options: StoreOptions = {}): Promise<AgentHeartbeatRecord[]> {
-  try {
-    const raw = await readFile(storePath(options.path), "utf8");
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw error;
-  }
+function dbPath(options: StoreOptions = {}) {
+  return getDbPath(options.dbPath);
 }
 
-async function writeHeartbeats(records: AgentHeartbeatRecord[], options: StoreOptions = {}) {
-  const path = storePath(options.path);
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(records, null, 2), "utf8");
+export async function readHeartbeats(options: StoreOptions = {}): Promise<AgentHeartbeatRecord[]> {
+  const db = getDb(options.dbPath);
+  const rows = db
+    .prepare(
+      `SELECT agent_id, observed_at, ok, current_task, metadata FROM heartbeats ORDER BY observed_at DESC`
+    )
+    .all() as {
+    agent_id: string;
+    observed_at: string;
+    ok: number;
+    current_task: string | null;
+    metadata: string | null;
+  }[];
+
+  return rows.map((row) => ({
+    agentId: row.agent_id,
+    observedAt: row.observed_at,
+    ok: row.ok === 1,
+    currentTask: row.current_task ?? undefined,
+    metadata: row.metadata ? (JSON.parse(row.metadata) as Record<string, unknown>) : undefined,
+  }));
 }
 
 export async function recordHeartbeat(
@@ -53,9 +57,24 @@ export async function recordHeartbeat(
     currentTask: input.currentTask,
     metadata: input.metadata,
   };
-  const existing = await readHeartbeats(options);
-  const next = [record, ...existing.filter((r) => r.agentId !== record.agentId)];
-  await writeHeartbeats(next, options);
+
+  const db = getDb(options.dbPath);
+  db.prepare(
+    `INSERT INTO heartbeats (agent_id, observed_at, ok, current_task, metadata)
+     VALUES (@agentId, @observedAt, @ok, @currentTask, @metadata)
+     ON CONFLICT(agent_id) DO UPDATE SET
+       observed_at = excluded.observed_at,
+       ok = excluded.ok,
+       current_task = excluded.current_task,
+       metadata = excluded.metadata`
+  ).run({
+    agentId: record.agentId,
+    observedAt: record.observedAt,
+    ok: record.ok ? 1 : 0,
+    currentTask: record.currentTask ?? null,
+    metadata: record.metadata ? JSON.stringify(record.metadata) : null,
+  });
+
   return record;
 }
 
@@ -70,3 +89,6 @@ export function latestHeartbeatsByAgent(records: AgentHeartbeatRecord[]): Map<st
   }
   return byAgent;
 }
+
+// Re-export for tests that assert store path resolution
+export { dbPath as heartbeatDbPath };

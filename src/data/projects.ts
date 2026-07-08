@@ -64,6 +64,7 @@ export const projects: Project[] = [
     priority: 1,
     status: "Deployed on Railway — Free tool (no billing)",
     lastWorked: "2026-03-30",
+    liveUrl: "https://fleetintel.net",
     repoUrl: "https://github.com/thejustinfagan/fleet-intel",
     localPath: "~/dev/fleet-intel",
 

@@ -4,6 +4,7 @@ import {
   resolveHttpTargets,
   httpProbeConnector,
   DEFAULT_PROBE_TARGETS,
+  registryProbeTargets,
   type HttpProbeTarget,
 } from "../connectors/http";
 
@@ -38,8 +39,12 @@ describe("configuredHttpTargets — MC_PROBE_URLS parsing", () => {
 });
 
 describe("resolveHttpTargets — defaults vs config", () => {
-  it("falls back to the committed defaults when MC_PROBE_URLS is unset", () => {
-    expect(resolveHttpTargets({} as NodeJS.ProcessEnv)).toEqual(DEFAULT_PROBE_TARGETS);
+  it("merges committed defaults with registry live URLs when MC_PROBE_URLS is unset", () => {
+    const targets = resolveHttpTargets({} as NodeJS.ProcessEnv);
+    expect(targets.length).toBeGreaterThan(DEFAULT_PROBE_TARGETS.length);
+    expect(targets.find((t) => t.projectId === "mission-control")).toBeDefined();
+    expect(targets.find((t) => t.projectId === "public-data")).toBeDefined();
+    expect(targets.find((t) => t.projectId === "fleet-intel")).toBeDefined();
   });
 
   it("uses MC_PROBE_URLS when configured", () => {

@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { closeDb } from "@/lib/db/sqlite";
+import { recordHeartbeat } from "../heartbeat-store";
 import { heartbeatConnector } from "../connectors/heartbeat";
 import { buildMissionControlSnapshot } from "../snapshot";
 
@@ -14,25 +16,24 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  closeDb(join(tempDir, "test.db"));
   if (tempDir) await rm(tempDir, { recursive: true, force: true });
 });
 
 describe("heartbeatConnector", () => {
   it("produces online status for a fresh passing heartbeat", async () => {
-    const path = join(tempDir, "hb.json");
-    await writeFile(
-      path,
-      JSON.stringify([
-        {
-          agentId: "barry",
-          observedAt: "2026-06-19T11:59:00Z",
-          ok: true,
-          currentTask: "Mission Control build",
-        },
-      ])
+    const dbPath = join(tempDir, "test.db");
+    await recordHeartbeat(
+      {
+        agentId: "barry",
+        observedAt: "2026-06-19T11:59:00Z",
+        ok: true,
+        currentTask: "Mission Control build",
+      },
+      { dbPath }
     );
 
-    const result = await heartbeatConnector(NOW, { storePath: path });
+    const result = await heartbeatConnector(NOW, { dbPath });
     expect(result.evidence).toHaveLength(1);
     expect(result.byAgent.barry).toBeDefined();
 
@@ -41,15 +42,15 @@ describe("heartbeatConnector", () => {
       probeTargets: [],
       localTargets: [],
       skipGithub: true,
-      heartbeatStorePath: path,
+      heartbeatDbPath: dbPath,
     });
     const barry = snapshot.agents.find((a) => a.id === "barry");
     expect(barry?.status).toBe("online");
     expect(barry?.statusLabel).toMatch(/online/i);
   });
 
-  it("returns empty when no heartbeats on file", async () => {
-    const result = await heartbeatConnector(NOW, { storePath: join(tempDir, "missing.json") });
+  it("returns empty when no heartbeats in db", async () => {
+    const result = await heartbeatConnector(NOW, { dbPath: join(tempDir, "empty.db") });
     expect(result.evidence).toHaveLength(0);
   });
 });

@@ -15,6 +15,7 @@ import type { Claim, ConnectorResult, Evidence } from "../types";
 import { claimStatusFromEvidence } from "../rules";
 import { nowIso } from "../time";
 import { computeFreshness } from "../ttl";
+import { loadRegistry } from "../registry";
 
 export interface HttpProbeTarget {
   projectId: string;
@@ -37,6 +38,51 @@ export const DEFAULT_PROBE_TARGETS: HttpProbeTarget[] = [
     url: "https://web-production-2c48a.up.railway.app/api/status",
   },
 ];
+
+/** Extra probes for projects without liveUrl in registry but known deployed surfaces. */
+export const SUPPLEMENTAL_PROBE_TARGETS: HttpProbeTarget[] = [
+  {
+    projectId: "fleet-intel",
+    label: "Fleet Intel production",
+    url: "https://fleetintel.net",
+  },
+];
+
+/** Build probe targets from registry liveUrl fields. */
+export function registryProbeTargets(
+  env: NodeJS.ProcessEnv = process.env
+): HttpProbeTarget[] {
+  const registry = loadRegistry();
+  const targets: HttpProbeTarget[] = [];
+
+  for (const project of registry) {
+    if (!project.liveUrl) continue;
+    let url = project.liveUrl;
+    let label = `${project.name} live URL`;
+
+    // Mission Control root rebuilds the snapshot — probe /api/status instead.
+    if (project.id === "mission-control") {
+      url = url.replace(/\/?$/, "/api/status");
+      label = "Mission Control on Railway (/api/status)";
+    }
+
+    targets.push({ projectId: project.id, label, url });
+  }
+
+  return targets;
+}
+
+function dedupeProbeTargets(targets: HttpProbeTarget[]): HttpProbeTarget[] {
+  const seen = new Set<string>();
+  const out: HttpProbeTarget[] = [];
+  for (const t of targets) {
+    const key = `${t.projectId}|${t.url}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(t);
+  }
+  return out;
+}
 
 /** Parse MC_PROBE_URLS into targets. Only http(s) URLs are accepted. */
 export function configuredHttpTargets(
@@ -63,7 +109,11 @@ export function resolveHttpTargets(
   env: NodeJS.ProcessEnv = process.env
 ): HttpProbeTarget[] {
   if (env.MC_PROBE_URLS) return configuredHttpTargets(env);
-  return DEFAULT_PROBE_TARGETS;
+  return dedupeProbeTargets([
+    ...DEFAULT_PROBE_TARGETS,
+    ...registryProbeTargets(env),
+    ...SUPPLEMENTAL_PROBE_TARGETS,
+  ]);
 }
 
 export interface HttpConnectorResult extends ConnectorResult {
