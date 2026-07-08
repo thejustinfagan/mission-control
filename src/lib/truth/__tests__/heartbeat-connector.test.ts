@@ -42,6 +42,7 @@ describe("heartbeatConnector", () => {
       probeTargets: [],
       localTargets: [],
       skipGithub: true,
+      skipRender: true,
       heartbeatDbPath: dbPath,
     });
     const barry = snapshot.agents.find((a) => a.id === "barry");

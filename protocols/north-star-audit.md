@@ -85,9 +85,9 @@ Executive summary             Raw metrics only ❌           AI briefing (this P
 
 ### Phase 3 — Full operating system
 
-8. **Browser-render proof** — Playwright probes for "product actually works"
-9. **Mobile task steering** — Drag/drop, quick-add, approve from iPhone
-10. **Monetization + content lanes** — Extend registry schema and cockpit panels
+8. **Browser-render proof** — HTML render probes with content markers ✅ *shipped*
+9. **Mobile task steering** — Quick-add, drag/drop, tap-to-move status ✅ *shipped*
+10. **Monetization + content lanes** — Strategic lanes panel on cockpit ✅ *shipped*
 
 ## AI Integration Opportunity
 
@@ -109,9 +109,9 @@ NVIDIA NIM (`integrate.api.nvidia.com`) can power:
 | Auto-summarize | 7/10 | AI briefing + sweep |
 | Auto-escalate | 6/10 | Justin queue works |
 | Auto-improve | 5/10 | OS critique in nightly sweep |
-| Truth/evidence | 9/10 | Heartbeat + GitHub + activity + multi-URL probes |
-| Mobile | 5/10 | Responsive, not steering-optimized |
-| **Overall north-star proximity** | **~60%** | Automation layer live; Barry must feed + cron sweep |
+| Truth/evidence | 9/10 | Render probes + heartbeat + GitHub + multi-URL |
+| Mobile | 8/10 | Task board quick-add, drag/drop, tap-to-move |
+| **Overall north-star proximity** | **~75%** | Full OS surface; Barry must feed + cron |
 
 ## Bottom Line
 

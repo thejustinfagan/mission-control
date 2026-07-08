@@ -1,112 +1,73 @@
-import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import { tasks as fallbackTasks, type Task } from "@/data/tasks";
+import { NextRequest, NextResponse } from "next/server";
+import { readTasks, updateTaskStatus, createTask } from "@/lib/truth/task-store";
+import type { Task } from "@/data/tasks";
 
-const STATUS_FILE = path.join("/tmp", "mission-control-status.json");
 const VALID_STATUSES: Task["status"][] = ["todo", "in-progress", "blocked", "done"];
 
-function readStatus(): any | null {
-  try {
-    const data = fs.readFileSync(STATUS_FILE, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
-}
-
-function writeStatus(data: any): boolean {
-  try {
-    fs.writeFileSync(STATUS_FILE, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    console.error("Error writing status:", e);
-    return false;
-  }
-}
-
-function getStatusTasks(status: any): Task[] | null {
-  if (Array.isArray(status?.tasks)) return status.tasks as Task[];
-  return null;
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
-  const status = readStatus();
-  const tasks = getStatusTasks(status) ?? fallbackTasks;
+  const tasks = await readTasks();
   return NextResponse.json(tasks);
 }
 
-export async function POST(request: Request) {
+/** Create a task: { title, project, assignee?, priority?, description? } */
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const id = typeof body?.id === "string" ? body.id : null;
-    const status = body?.status as Task["status"];
 
-    if (!id || !VALID_STATUSES.includes(status)) {
-      return NextResponse.json(
-        { error: "Missing or invalid fields: id, status" },
-        { status: 400 }
-      );
-    }
-
-    const statusStore = readStatus();
-    const canWriteStatus = !!statusStore && typeof statusStore === "object" && !Array.isArray(statusStore);
-
-    if (!canWriteStatus) {
-      return NextResponse.json(
-        { error: "No live status store available" },
-        { status: 409 }
-      );
-    }
-
-    const tasks = getStatusTasks(statusStore) ?? fallbackTasks;
-    const index = tasks.findIndex((task) => task.id === id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    const now = new Date().toISOString();
-    const current = tasks[index];
-    const nextTask: Task = {
-      ...current,
-      status,
-      updatedAt: now,
-    };
-
-    if (status === "done") {
-      nextTask.completedAt = typeof body?.completedAt === "string" ? body.completedAt : now;
-      nextTask.blockedReason = undefined;
-    } else {
-      nextTask.completedAt = undefined;
-      if (status === "blocked") {
-        nextTask.blockedReason = typeof body?.blockedReason === "string" ? body.blockedReason : current.blockedReason;
-      } else {
-        nextTask.blockedReason = undefined;
+    // Status update (legacy): { id, status }
+    if (body.id && body.status) {
+      if (!VALID_STATUSES.includes(body.status)) {
+        return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
+      const updated = await updateTaskStatus(body.id, body.status, {
+        blockedReason: body.blockedReason,
+        completedAt: body.completedAt,
+      });
+      if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      return NextResponse.json(updated);
     }
 
-    const updatedTasks = [...tasks];
-    updatedTasks[index] = nextTask;
-
-    const nextStatus = {
-      ...statusStore,
-      tasks: updatedTasks,
-      timestamp: new Date().toISOString(),
-    };
-
-    if (writeStatus(nextStatus)) {
-      return NextResponse.json(nextTask);
+    // Create
+    if (!body.title?.trim() || !body.project?.trim()) {
+      return NextResponse.json({ error: "Missing title or project" }, { status: 400 });
     }
 
+    const task = await createTask({
+      title: body.title,
+      project: body.project,
+      assignee: body.assignee,
+      priority: body.priority,
+      description: body.description,
+      tags: body.tags,
+    });
+
+    return NextResponse.json(task, { status: 201 });
+  } catch (err) {
     return NextResponse.json(
-      { error: "Failed to store task update" },
-      { status: 500 }
+      { error: "Invalid request", detail: err instanceof Error ? err.message : String(err) },
+      { status: 400 }
     );
-  } catch (e) {
-    console.error("POST error:", e);
+  }
+}
+
+/** Patch task status: { id, status, blockedReason? } */
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    if (!body.id || !VALID_STATUSES.includes(body.status)) {
+      return NextResponse.json({ error: "Missing or invalid id/status" }, { status: 400 });
+    }
+    const updated = await updateTaskStatus(body.id, body.status, {
+      blockedReason: body.blockedReason,
+    });
+    if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    return NextResponse.json(updated);
+  } catch (err) {
     return NextResponse.json(
-      { error: "Invalid request body" },
+      { error: "Invalid request", detail: err instanceof Error ? err.message : String(err) },
       { status: 400 }
     );
   }

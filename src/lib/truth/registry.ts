@@ -23,8 +23,9 @@ export interface RegistryProject {
   localPath?: string;
   blockers: string[];
   needsDecision?: { question: string; options?: string[] };
-  /** Open next-actions owned by Justin (decisions/approvals/unblocks live here). */
   justinActions: RegistryAction[];
+  monetization?: { current: number; potential: number; currency: string };
+  contentLane?: string;
 }
 
 export interface RegistryAction {
@@ -54,5 +55,7 @@ export function loadRegistry(): RegistryProject[] {
     blockers: p.blockers ?? [],
     needsDecision: p.needsDecision,
     justinActions: justinActionsFor(p),
+    monetization: p.revenueStatus,
+    contentLane: p.contentLane,
   }));
 }

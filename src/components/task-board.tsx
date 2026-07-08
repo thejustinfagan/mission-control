@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Task } from "@/data/tasks";
 
 interface ProjectMeta {
@@ -158,7 +158,15 @@ function doneSort(a: Task, b: Task): number {
   return bDate - aDate;
 }
 
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({
+  task,
+  onStatusChange,
+  onDragStart,
+}: {
+  task: Task;
+  onStatusChange: (id: string, status: Task["status"]) => void;
+  onDragStart: (e: React.DragEvent, taskId: string) => void;
+}) {
   const projectMeta = PROJECT_META[task.project] || {
     ...DEFAULT_PROJECT_META,
     label: formatProjectLabel(task.project),
@@ -166,9 +174,13 @@ function TaskCard({ task }: { task: Task }) {
   const assigneeMeta = ASSIGNEE_META[task.assignee];
   const priorityMeta = PRIORITY_META[task.priority];
 
+  const otherStatuses = STATUSES.filter((s) => s !== task.status);
+
   return (
     <article
-      className={`rounded-xl border bg-midnight-800/70 p-4 shadow-panel transition hover:-translate-y-0.5 hover:shadow-glow ${projectMeta.accent}`}
+      draggable
+      onDragStart={(e) => onDragStart(e, task.id)}
+      className={`cursor-grab rounded-xl border bg-midnight-800/70 p-4 shadow-panel transition active:cursor-grabbing hover:-translate-y-0.5 hover:shadow-glow ${projectMeta.accent}`}
     >
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-sm font-semibold text-white leading-snug">{task.title}</h3>
@@ -212,7 +224,111 @@ function TaskCard({ task }: { task: Task }) {
           <span className="text-emerald-300">Completed {formatDate(task.completedAt)}</span>
         ) : null}
       </div>
+
+      {/* Mobile-friendly move controls (tap; no drag required on iPhone) */}
+      <div className="mt-3 flex flex-wrap gap-1 border-t border-slate-700/40 pt-2">
+        {otherStatuses.map((status) => (
+          <button
+            key={status}
+            type="button"
+            onClick={() => onStatusChange(task.id, status)}
+            className="rounded-full border border-slate-600/50 bg-slate-800/60 px-2 py-1 text-[10px] text-slate-300 transition hover:border-aurora-500/40 hover:text-aurora-200"
+          >
+            → {STATUS_META[status].label}
+          </button>
+        ))}
+      </div>
     </article>
+  );
+}
+
+function QuickAddBar({
+  projectOptions,
+  onCreated,
+}: {
+  projectOptions: ProjectOption[];
+  onCreated: (task: Task) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [project, setProject] = useState(projectOptions[0]?.id ?? "mission-control");
+  const [priority, setPriority] = useState<Task["priority"]>("medium");
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim(), project, priority }),
+      });
+      if (!res.ok) throw new Error("Failed to create task");
+      const task = (await res.json()) as Task;
+      onCreated(task);
+      setTitle("");
+      setOpen(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="glass-panel rounded-2xl p-4">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between text-left"
+      >
+        <span className="text-sm font-medium text-aurora-300">+ Quick add task</span>
+        <span className="text-xs text-slate-500">{open ? "Hide" : "Tap to add"}</span>
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="What needs doing?"
+            className="w-full rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2.5 text-sm text-white outline-none focus:border-aurora-500/70"
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              value={project}
+              onChange={(e) => setProject(e.target.value)}
+              className="rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-xs text-slate-100"
+            >
+              {projectOptions.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Task["priority"])}
+              className="rounded-xl border border-slate-700/60 bg-midnight-700/60 px-3 py-2 text-xs text-slate-100"
+            >
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            disabled={saving || !title.trim()}
+            onClick={submit}
+            className="w-full rounded-xl bg-aurora-500/20 py-2.5 text-sm font-medium text-aurora-200 transition hover:bg-aurora-500/30 disabled:opacity-50"
+          >
+            {saving ? "Adding…" : "Add to Todo"}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -223,30 +339,55 @@ export function TaskBoard() {
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [search, setSearch] = useState<string>("");
   const [showDone, setShowDone] = useState<boolean>(true);
+  const [dragTaskId, setDragTaskId] = useState<string | null>(null);
+
+  const loadTasks = useCallback(async () => {
+    try {
+      const response = await fetch("/api/tasks");
+      if (!response.ok) throw new Error("Failed to fetch tasks");
+      const data = (await response.json()) as Task[];
+      setTasks(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to load tasks:", error);
+    }
+  }, []);
 
   useEffect(() => {
-    let isActive = true;
-    const controller = new AbortController();
-
-    const loadTasks = async () => {
-      try {
-        const response = await fetch("/api/tasks", { signal: controller.signal });
-        if (!response.ok) throw new Error("Failed to fetch tasks");
-        const data = (await response.json()) as Task[];
-        if (isActive) setTasks(Array.isArray(data) ? data : []);
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        console.error("Failed to load tasks:", error);
-      }
-    };
-
     loadTasks();
+  }, [loadTasks]);
 
-    return () => {
-      isActive = false;
-      controller.abort();
-    };
+  const handleStatusChange = useCallback(
+    async (id: string, status: Task["status"]) => {
+      try {
+        const res = await fetch("/api/tasks", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, status }),
+        });
+        if (!res.ok) throw new Error("Update failed");
+        const updated = (await res.json()) as Task;
+        setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    []
+  );
+
+  const handleDragStart = useCallback((e: React.DragEvent, taskId: string) => {
+    setDragTaskId(taskId);
+    e.dataTransfer.effectAllowed = "move";
   }, []);
+
+  const handleDrop = useCallback(
+    (status: Task["status"]) => {
+      if (dragTaskId) {
+        handleStatusChange(dragTaskId, status);
+        setDragTaskId(null);
+      }
+    },
+    [dragTaskId, handleStatusChange]
+  );
 
   const projectOptions = useMemo<ProjectOption[]>(() => {
     const ids = Array.from(new Set(tasks.map((task) => task.project)));
@@ -321,6 +462,11 @@ export function TaskBoard() {
 
   return (
     <div className="space-y-6">
+      <QuickAddBar
+        projectOptions={projectOptions.length > 0 ? projectOptions : [{ id: "mission-control", label: "Mission Control" }]}
+        onCreated={(task) => setTasks((prev) => [task, ...prev])}
+      />
+
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
         <div className="glass-panel rounded-2xl px-5 py-4">
@@ -415,7 +561,18 @@ export function TaskBoard() {
           const visibleTasks = isDone && !showDone ? [] : isDone ? tasksForStatus.slice(0, 10) : tasksForStatus;
 
           return (
-            <section key={status} className="rounded-2xl border border-slate-800/70 bg-midnight-800/40 p-4">
+            <section
+              key={status}
+              className="rounded-2xl border border-slate-800/70 bg-midnight-800/40 p-4"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                handleDrop(status);
+              }}
+            >
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <h3 className="text-sm font-semibold text-white">{meta.label}</h3>
@@ -446,7 +603,14 @@ export function TaskBoard() {
                       : "No tasks here yet"}
                   </div>
                 ) : (
-                  visibleTasks.map((task) => <TaskCard key={task.id} task={task} />)
+                  visibleTasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onStatusChange={handleStatusChange}
+                      onDragStart={handleDragStart}
+                    />
+                  ))
                 )}
               </div>
             </section>

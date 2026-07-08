@@ -25,6 +25,7 @@ import { localPathConnector, type LocalPathTarget } from "./connectors/local";
 import { heartbeatConnector } from "./connectors/heartbeat";
 import { activityConnector } from "./connectors/activity";
 import { githubConnector, type GitHubConnectorResult } from "./connectors/github";
+import { renderProbeConnector } from "./connectors/render";
 import { deriveAgentStatus, deriveGlobalStatus, deriveProjectState } from "./rules";
 import { computeFreshness } from "./ttl";
 import { applyActionDecisionsToQueue, readActionDecisions } from "./action-decisions";
@@ -172,6 +173,9 @@ function buildProofCards(
     const github = githubByProject[registryProject.id];
     const commitEv = github ? evidenceById.get(github.commitEvidenceId) : undefined;
     const ciEv = github ? evidenceById.get(github.ciEvidenceId) : undefined;
+    const renderEv = project?.evidenceIds
+      .map((id) => evidenceById.get(id))
+      .find((row) => row?.kind === "browser-render");
     const latestActivity = (activityByProject[registryProject.id] ?? [])
       .map((id) => evidenceById.get(id))
       .filter((row): row is Evidence => Boolean(row))
@@ -202,9 +206,11 @@ function buildProofCards(
       deploy: makeProofSlot("deploy", liveUrl ? `Registered live surface: ${liveUrl}` : undefined, liveUrl),
       liveVerification: makeProofSlot(
         "liveVerification",
-        healthEvidence?.kind === "browser-render" ? healthEvidence.summary : liveUrl ? "Live URL registered; browser proof not wired" : undefined,
-        healthEvidence?.source.ref || liveUrl,
-        healthEvidence?.kind === "browser-render" ? "verified" : "unknown"
+        renderEv?.summary ??
+          (healthEvidence?.kind === "browser-render" ? healthEvidence.summary : undefined) ??
+          (liveUrl ? "Live URL registered; render proof not wired" : undefined),
+        renderEv?.source.ref ?? healthEvidence?.source.ref ?? liveUrl,
+        renderEv?.ok === true ? "verified" : renderEv?.ok === false ? "unverified" : "unknown"
       ),
       blocker: makeProofSlot("blocker", blocker || "No blocker recorded; still needs a fresh proof card before green"),
       nextAction: makeProofSlot("nextAction", registryProject.justinActions[0]?.label || "Attach change, commit, tests, deploy/live URL, and PASS/FAIL proof"),
@@ -244,6 +250,8 @@ export interface BuildOptions {
   activityDbPath?: string;
   /** Skip GitHub API calls (used by tests to stay offline). */
   skipGithub?: boolean;
+  /** Skip render/HTML probes (used by tests to stay offline). */
+  skipRender?: boolean;
 }
 
 export async function buildMissionControlSnapshot(
@@ -287,6 +295,13 @@ export async function buildMissionControlSnapshot(
         claims: [] as Claim[],
         byProject: {} as GitHubConnectorResult["byProject"],
       }));
+  const renderResult = options.skipRender
+    ? { evidence: [] as Evidence[], claims: [] as Claim[], byProject: {} as Record<string, { evidenceId: string; claimId: string }> }
+    : await renderProbeConnector(now).catch(() => ({
+        evidence: [] as Evidence[],
+        claims: [] as Claim[],
+        byProject: {} as Record<string, { evidenceId: string; claimId: string }>,
+      }));
 
   const evidence: Evidence[] = [
     ...staticResult.evidence,
@@ -295,6 +310,7 @@ export async function buildMissionControlSnapshot(
     ...heartbeatResult.evidence,
     ...activityResult.evidence,
     ...githubResult.evidence,
+    ...renderResult.evidence,
   ];
   const claims: Claim[] = [
     ...staticResult.claims,
@@ -303,6 +319,7 @@ export async function buildMissionControlSnapshot(
     ...heartbeatResult.claims,
     ...activityResult.claims,
     ...githubResult.claims,
+    ...renderResult.claims,
   ];
 
   const evidenceById = new Map(evidence.map((e) => [e.id, e]));
@@ -356,17 +373,20 @@ export async function buildMissionControlSnapshot(
     const httpRef = httpResult.byProject[project.id];
     const localRef = localResult.byProject[project.id];
     const githubRef = githubResult.byProject[project.id];
+    const renderRef = renderResult.byProject[project.id];
     const activityIds = activityResult.byProject[project.id] ?? [];
 
     const reachEvidence = httpRef ? evidenceById.get(httpRef.evidenceId) ?? null : null;
+    const renderEvidence = renderRef ? evidenceById.get(renderRef.evidenceId) ?? null : null;
+    const ciEvidence = githubRef ? evidenceById.get(githubRef.ciEvidenceId) ?? null : null;
+    const healthEvidence = [renderEvidence, ciEvidence].filter((e): e is Evidence => Boolean(e));
 
-    // Health is only proven by rendered/test evidence — none wired yet.
     let stateResult = deriveProjectState(
       {
         claimedStatus: project.claimedStatus,
         blockers: project.blockers,
         stage: project.stage,
-        healthEvidence: [],
+        healthEvidence,
       },
       now
     );
@@ -391,6 +411,7 @@ export async function buildMissionControlSnapshot(
       localRef?.claimId,
       githubRef ? `cl:github:commit:${project.id}` : undefined,
       githubRef ? `cl:github:ci:${project.id}` : undefined,
+      renderRef?.claimId,
     ].filter(Boolean) as string[];
 
     const projectEvidenceIds = [
@@ -399,6 +420,7 @@ export async function buildMissionControlSnapshot(
       localRef?.evidenceId,
       githubRef?.commitEvidenceId,
       githubRef?.ciEvidenceId,
+      renderRef?.evidenceId,
       ...activityIds,
     ].filter(Boolean) as string[];
 

@@ -52,6 +52,23 @@ function migrate(db: Database.Database) {
       report_json TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_sweep_ts ON sweep_reports(generated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS tasks (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      project TEXT NOT NULL,
+      assignee TEXT NOT NULL,
+      status TEXT NOT NULL,
+      priority TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      completed_at TEXT,
+      blocked_reason TEXT,
+      tags TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+    CREATE INDEX IF NOT EXISTS idx_tasks_updated ON tasks(updated_at DESC);
   `);
 }
 

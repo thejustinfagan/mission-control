@@ -45,6 +45,9 @@ export interface Project {
     potential: number;
     currency: string;
   };
+
+  /** Thought leadership / content development lane, if applicable. */
+  contentLane?: string;
   
   techStack?: string[];
   keyFiles?: ProjectFile[];
@@ -157,6 +160,7 @@ export const projects: Project[] = [
     lastWorked: "2026-03-16",
     repoUrl: "https://github.com/thejustinfagan/beast-mode",
     localPath: "~/dev/beast-mode",
+    contentLane: "thought-leadership — open-source infra monitoring",
 
     currentMilestone: "Full CI pipeline, GitHub Actions, dashboard generation",
     progress: 95,
@@ -205,6 +209,7 @@ export const projects: Project[] = [
     liveUrl: "https://web-production-2c48a.up.railway.app",
     repoUrl: "https://github.com/thejustinfagan/mission-control",
     localPath: "~/dev/mission-control",
+    contentLane: "thought-leadership — AI operating system / Mission Control",
 
     currentMilestone: "Projects page + data refresh (Nightly Build 2026-03-31)",
     progress: 80,
