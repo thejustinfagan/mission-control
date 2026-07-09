@@ -4,7 +4,7 @@
  * Agent: Bearer only (MC_AUTH_TOKEN) — no fallback, no query string.
  */
 
-const ALLOWED_AGENT_ROUTES = new Set([
+const ALLOWED_AGENT_POST_ROUTES = new Set([
   '/api/agents/heartbeat',
   '/api/agents/feed',
   '/api/agents/registry',
@@ -18,7 +18,7 @@ const ALLOWED_AGENT_ROUTES = new Set([
 export function isPublicStaticPath(pathname: string): boolean {
   if (pathname.startsWith('/_next/')) return true;
   if (pathname === '/favicon.ico') return true;
-  if (pathname === '/health') return true;
+  if (pathname === '/api/health') return true;
   return false;
 }
 
@@ -52,15 +52,18 @@ export function verifyHumanBasicAuth(request: Request): boolean {
 
   try {
     const decoded = atob(authHeader.slice(6));
-    const [u, p] = decoded.split(':');
+    const separator = decoded.indexOf(':');
+    if (separator === -1) return false;
+    const u = decoded.slice(0, separator);
+    const p = decoded.slice(separator + 1);
     return u === username && p === password;
   } catch {
     return false;
   }
 }
 
-export function isAgentRoute(pathname: string): boolean {
-  return ALLOWED_AGENT_ROUTES.has(pathname);
+export function isAgentPushRoute(pathname: string, method: string): boolean {
+  return method.toUpperCase() === 'POST' && ALLOWED_AGENT_POST_ROUTES.has(pathname);
 }
 
 /**
@@ -70,8 +73,8 @@ export function isAgentRoute(pathname: string): boolean {
 export function requireAuth(request: Request, pathname: string): Response | null {
   if (isPublicStaticPath(pathname)) return null;
 
-  // Agent-only routes: strict Bearer only
-  if (isAgentRoute(pathname)) {
+  // Agent push routes: strict Bearer only for POST.
+  if (isAgentPushRoute(pathname, request.method)) {
     if (verifyAgentAuthStrict(request)) return null;
     return new Response(JSON.stringify({ error: 'Unauthorized (agent)' }), {
       status: 401,
@@ -82,14 +85,17 @@ export function requireAuth(request: Request, pathname: string): Response | null
   // Everything else (pages, read APIs, mutations): require human Basic Auth
   if (verifyHumanBasicAuth(request)) return null;
 
-  const response = new Response(JSON.stringify({ error: 'Unauthorized' }), {
+  return humanUnauthorizedResponse();
+}
+
+export function humanUnauthorizedResponse() {
+  return new Response(JSON.stringify({ error: 'Unauthorized' }), {
     status: 401,
     headers: {
       'Content-Type': 'application/json',
       'WWW-Authenticate': 'Basic realm="Mission Control"',
     },
   });
-  return response;
 }
 
 export function unauthorizedResponse() {

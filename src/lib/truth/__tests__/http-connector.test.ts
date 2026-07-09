@@ -68,9 +68,10 @@ describe("DEFAULT_PROBE_TARGETS point at Railway, never localhost or Vercel", ()
     }
   });
 
-  it("probes /api/status (not the snapshot-building root) to avoid recursion", () => {
+  it("probes the public health endpoint, not protected status data", () => {
     const mc = DEFAULT_PROBE_TARGETS.find((t) => t.projectId === "mission-control");
-    expect(mc?.url).toContain("/api/status");
+    expect(mc?.url).toContain("/api/health");
+    expect(mc?.url).not.toContain("/api/status");
   });
 });
 

@@ -9,7 +9,7 @@ export { unauthorizedResponse } from './access-control'; // re-export for routes
 export function getExpectedAuthToken(): string {
   const token = process.env.MC_AUTH_TOKEN?.trim();
   if (!token) {
-    throw new Error('MC_AUTH_TOKEN must be set in production');
+    throw new Error('MC_AUTH_TOKEN must be set');
   }
   return token;
 }

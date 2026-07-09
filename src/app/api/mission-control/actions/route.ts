@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recordActionDecision } from "@/lib/truth/action-decisions";
 import type { JustinControlType } from "@/lib/truth/types";
-import { verifyHumanBasicAuth, unauthorizedResponse } from "@/lib/truth/access-control";
+import { verifyHumanBasicAuth, humanUnauthorizedResponse } from "@/lib/truth/access-control";
 
 const ALLOWED = new Set<JustinControlType>([
   "approve",
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
-  if (!verifyHumanBasicAuth(request)) return unauthorizedResponse();
+  if (!verifyHumanBasicAuth(request)) return humanUnauthorizedResponse();
 
   try {
     const body = await request.json();

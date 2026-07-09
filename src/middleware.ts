@@ -5,7 +5,7 @@ import { requireAuth, isPublicStaticPath } from '@/lib/truth/access-control';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public static and health
+  // Allow static assets and the narrow public health API.
   if (isPublicStaticPath(pathname)) {
     return NextResponse.next();
   }

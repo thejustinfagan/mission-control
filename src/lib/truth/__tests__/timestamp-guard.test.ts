@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  validateObservedAt, 
+import { computeFreshness } from '../ttl';
+import {
+  validateObservedAt,
   clampSlightlyFuture,
-  isFutureBeyondSkew 
+  isFutureBeyondSkew
 } from '../timestamp-guard';
 
 describe('timestamp-guard (future date safety)', () => {
@@ -40,5 +41,14 @@ describe('timestamp-guard (future date safety)', () => {
     const old = new Date(now.getTime() - 10000 * 1000).toISOString();
     // This will be used in heartbeat-store integration
     expect(validateObservedAt(old, now)).toBe(true); // valid timestamp, just old
+  });
+
+  it('computes slightly future freshness from the clamped timestamp', () => {
+    const slightlyFuture = new Date(now.getTime() + 299 * 1000).toISOString();
+    const freshness = computeFreshness(slightlyFuture, 60, now);
+    expect(freshness.state).toBe('fresh');
+    expect(freshness.observedAt).toBe(now.toISOString());
+    expect(freshness.ageSeconds).toBe(0);
+    expect(freshness.expiresAt).toBe(new Date(now.getTime() + 60 * 1000).toISOString());
   });
 });

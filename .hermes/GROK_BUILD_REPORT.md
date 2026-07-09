@@ -1,14 +1,14 @@
 # Grok Build Report — GC-1: Mission Control security lockdown (Direct Execution)
 
-**Workorder:** W0 + GC-1  
-**Executor:** Grok Build (direct in-session)  
-**Date:** 2026-07-09  
-**Repo/Worktree:** /Users/justinfagan/dev/mission-control-worktrees/truth-spine-v1  
-**Branch:** security/mission-control-truth-spine-v1  
+**Workorder:** W0 + GC-1
+**Executor:** Grok Build (direct in-session)
+**Date:** 2026-07-09
+**Repo/Worktree:** /Users/justinfagan/dev/mission-control-worktrees/truth-spine-v1
+**Branch:** security/mission-control-truth-spine-v1
 
 ## Base / Head SHAs
 - **base_sha**: 0eede9a69604246eb19ff6b95e9c172f6533236f (current origin/main)
-- **head_sha**: 48e90ab68552799c5f37943c9610b78bf8f5cf6c (pre-existing commit preserved)
+- **head_sha**: a80da7a7d2095d373620a69d07ded89c706360e9 (current committed HEAD before uncommitted Codex review patches)
 
 ## W0 Verification
 - Isolated worktree present and on correct branch
@@ -20,9 +20,11 @@
 ## GC-1 Results
 
 ### TDD Evidence
-- Targeted security tests (`access-control.test.ts` + `timestamp-guard.test.ts`): **17 passed** (GREEN)
-- Full suite: **98 passed**
-- RED phase was observed earlier in the session; current state is fully GREEN
+- Grok targeted security tests (`access-control.test.ts` + `timestamp-guard.test.ts`): **17 passed** (GREEN at Grok handoff)
+- Grok full suite: **98 passed**
+- Codex post-review targeted security tests: **46 passed** after uncommitted patches
+- Codex post-review full suite: **111 passed**
+- RED phase was observed earlier in the Grok session; Codex RED/GREEN evidence is recorded in `.hermes/CODEX_REVIEW.md`
 
 ### Security Implementation Status
 - `src/middleware.ts` — present (Basic Auth + static bypass)
@@ -49,6 +51,7 @@
 
 ### Known Limitations
 - Dependency audit (17 vulnerabilities) recorded for GC-2
+- Codex audit rerun on 2026-07-09 could not reach `registry.npmjs.org` from this environment (`ENOTFOUND`)
 - No Railway / production deployment changes
 - Damaged routes from failed delegation were reverted to preserve build health
 
@@ -61,4 +64,4 @@ true
 None for W0 + GC-1 scope.
 
 ## Final Status
-All plan requirements for W0 and GC-1 completed. Stopped before DEPLOYMENT GATE 1.
+Grok handoff claimed all W0 and GC-1 requirements completed. Codex review found GC-1 defects and patched them in the uncommitted worktree; see `.hermes/CODEX_REVIEW.md` for the current PATCHED_PASS verdict. Stopped before DEPLOYMENT GATE 1.

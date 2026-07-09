@@ -38,9 +38,9 @@ export const DEFAULT_RENDER_TARGETS: RenderProbeTarget[] = [
   },
   {
     projectId: "mission-control",
-    label: "Mission Control status JSON",
-    url: "https://web-production-2c48a.up.railway.app/api/status",
-    markers: ["projects", "status", "mission"],
+    label: "Mission Control health JSON",
+    url: "https://web-production-2c48a.up.railway.app/api/health",
+    markers: ["ok", "mission-control"],
   },
 ];
 
@@ -68,7 +68,7 @@ export function registryRenderTargets(): RenderProbeTarget[] {
     if (!project.liveUrl) continue;
     let url = project.liveUrl;
     if (project.id === "mission-control") {
-      url = url.replace(/\/?$/, "/api/status");
+      url = url.replace(/\/?$/, "/api/health");
     }
     // Twitter/social surfaces — skip render probe (not HTML product pages)
     if (/twitter\.com|x\.com/i.test(url)) continue;

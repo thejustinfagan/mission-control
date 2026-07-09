@@ -52,4 +52,13 @@ describe("heartbeat-store", () => {
       recordHeartbeat({ agentId: "unknown-bot", ok: true }, { dbPath: dbPath() })
     ).rejects.toThrow(/Unknown agentId/);
   });
+
+  it("rejects far-future observedAt values before writing", async () => {
+    await expect(
+      recordHeartbeat(
+        { agentId: "barry", ok: true, observedAt: "2100-01-01T00:00:00.000Z" },
+        { dbPath: dbPath() }
+      )
+    ).rejects.toThrow(/Invalid observedAt/);
+  });
 });

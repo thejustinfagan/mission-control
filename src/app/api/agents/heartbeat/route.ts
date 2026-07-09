@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { recordHeartbeat, readHeartbeats, isKnownAgentId } from "@/lib/truth/heartbeat-store";
-import { verifyAgentAuthStrict, verifyHumanBasicAuth, unauthorizedResponse } from "@/lib/truth/access-control";
+import {
+  verifyAgentAuthStrict,
+  verifyHumanBasicAuth,
+  unauthorizedResponse,
+  humanUnauthorizedResponse,
+} from "@/lib/truth/access-control";
+import { validateObservedAt } from "@/lib/truth/timestamp-guard";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,7 +16,7 @@ export const revalidate = 0;
  * POST — agent push (requires strict Bearer)
  */
 export async function GET(request: NextRequest) {
-  if (!verifyHumanBasicAuth(request)) return unauthorizedResponse();
+  if (!verifyHumanBasicAuth(request)) return humanUnauthorizedResponse();
   const records = await readHeartbeats();
   return NextResponse.json({ heartbeats: records });
 }
@@ -26,12 +32,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (body.observedAt !== undefined && !validateObservedAt(body.observedAt)) {
+      return NextResponse.json({ error: "Invalid observedAt" }, { status: 400 });
+    }
 
     const record = await recordHeartbeat({
       agentId: body.agentId,
       ok: body.ok !== false,
       currentTask: body.currentTask,
       metadata: body.metadata,
+      observedAt: body.observedAt,
     });
 
     return NextResponse.json({ ok: true, heartbeat: record }, { status: 201 });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readTasks, updateTaskStatus, createTask } from "@/lib/truth/task-store";
 import type { Task } from "@/data/tasks";
-import { verifyHumanBasicAuth, unauthorizedResponse } from "@/lib/truth/access-control";
+import { verifyHumanBasicAuth, humanUnauthorizedResponse } from "@/lib/truth/access-control";
 
 const VALID_STATUSES: Task["status"][] = ["todo", "in-progress", "blocked", "done"];
 
@@ -9,14 +9,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
-  if (!verifyHumanBasicAuth(request)) return unauthorizedResponse();
+  if (!verifyHumanBasicAuth(request)) return humanUnauthorizedResponse();
   const tasks = await readTasks();
   return NextResponse.json(tasks);
 }
 
 /** Create a task: { title, project, assignee?, priority?, description? } */
 export async function POST(request: NextRequest) {
-  if (!verifyHumanBasicAuth(request)) return unauthorizedResponse();
+  if (!verifyHumanBasicAuth(request)) return humanUnauthorizedResponse();
 
   try {
     const body = await request.json();
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
 /** Patch task status: { id, status, blockedReason? } */
 export async function PATCH(request: NextRequest) {
-  if (!verifyHumanBasicAuth(request)) return unauthorizedResponse();
+  if (!verifyHumanBasicAuth(request)) return humanUnauthorizedResponse();
 
   try {
     const body = await request.json();

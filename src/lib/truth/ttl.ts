@@ -60,14 +60,14 @@ export function computeFreshness(
   }
 
   let age = ageSeconds(observedAt, now);
-  const hasTtl = ttlSeconds != null && ttlSeconds > 0;
-  const expiresAt = hasTtl ? addSeconds(observedAt, ttlSeconds as number) : null;
 
   if (age !== null && age < 0) {
     observedAt = clampSlightlyFuture(observedAt, now);
     age = ageSeconds(observedAt, now) ?? 0;
   }
 
+  const hasTtl = ttlSeconds != null && ttlSeconds > 0;
+  const expiresAt = hasTtl ? addSeconds(observedAt, ttlSeconds as number) : null;
   const fresh = isFresh(observedAt, ttlSeconds, now);
 
   return {
