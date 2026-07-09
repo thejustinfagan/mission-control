@@ -1,20 +1,15 @@
-/** Shared auth for agent push endpoints (heartbeat, activities, feed). */
+/**
+ * Legacy thin wrapper. New code should import from access-control.ts
+ * Kept for minimal route changes during GC-1.
+ */
+export { verifyAgentAuthStrict as verifyAgentAuth } from './access-control';
+export { unauthorizedResponse } from './access-control'; // re-export for routes that use it
 
+// Keep a strict getExpected for any internal use (but discourage)
 export function getExpectedAuthToken(): string {
-  return process.env.MC_AUTH_TOKEN?.trim() || "barry-update-2026";
-}
-
-export function verifyAgentAuth(request: Request): boolean {
-  const token = getExpectedAuthToken();
-  const header = request.headers.get("authorization");
-  if (header === `Bearer ${token}`) return true;
-  const query = new URL(request.url).searchParams.get("token");
-  return query === token;
-}
-
-export function unauthorizedResponse() {
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { "Content-Type": "application/json" },
-  });
+  const token = process.env.MC_AUTH_TOKEN?.trim();
+  if (!token) {
+    throw new Error('MC_AUTH_TOKEN must be set in production');
+  }
+  return token;
 }
