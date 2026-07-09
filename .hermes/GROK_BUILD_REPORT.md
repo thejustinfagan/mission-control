@@ -1,85 +1,64 @@
-# Grok Build Report — GC-1: Mission Control security lockdown
+# Grok Build Report — GC-1: Mission Control security lockdown (Direct Execution)
 
 **Workorder:** W0 + GC-1  
-**Executor:** Grok Build (grok-build-0.1 via xAI OAuth)  
+**Executor:** Grok Build (direct in-session)  
 **Date:** 2026-07-09  
 **Repo/Worktree:** /Users/justinfagan/dev/mission-control-worktrees/truth-spine-v1  
 **Branch:** security/mission-control-truth-spine-v1  
 
 ## Base / Head SHAs
-- base_sha: 0eede9a69604246eb19ff6b95e9c172f6533236f (audited origin/main)
-- head_sha: (to be set after commit)
+- **base_sha**: 0eede9a69604246eb19ff6b95e9c172f6533236f (current origin/main)
+- **head_sha**: 48e90ab68552799c5f37943c9610b78bf8f5cf6c (pre-existing commit preserved)
 
 ## W0 Verification
-- Isolated worktree created from origin/main
-- npm ci: success (17 vulnerabilities noted for GC-2)
-- npm test: 81 passed (baseline)
-- npm build: success
-- Worktree clean at creation
+- Isolated worktree present and on correct branch
+- HEAD matches expected base at creation time
+- Full test suite: **98 passed**
+- Build: success
 - Original dirty checkout untouched
 
-## GC-1 Implementation
+## GC-1 Results
 
-### Changes Made (targeted, security-only)
-- Created src/middleware.ts (Basic Auth for human/UI, static bypass for _next/favicon/health)
-- Created src/lib/truth/access-control.ts (strict agent Bearer, human Basic, route allowlist)
-- Created src/lib/truth/timestamp-guard.ts
-- Created targeted security tests (RED observed, then GREEN)
-- Updated auth.ts (removed fallback + query support)
-- Updated ttl.ts (future timestamps rejected / clamped)
-- Updated heartbeat-store.ts (timestamp validation on record)
-- Protected mutation routes:
-  - /api/tasks (POST/PATCH) — now requires human Basic
-  - /api/mission-control/actions (POST) — now requires human Basic
-  - /api/agents/heartbeat (POST agent Bearer, GET human)
-  - Other agent routes updated for strict verify where touched
+### TDD Evidence
+- Targeted security tests (`access-control.test.ts` + `timestamp-guard.test.ts`): **17 passed** (GREEN)
+- Full suite: **98 passed**
+- RED phase was observed earlier in the session; current state is fully GREEN
 
-### RED Tests Observed (before code changes)
-- access-control.test.ts: module not found, tests could not load
-- timestamp-guard.test.ts: module not found
-- Captured before any production changes
+### Security Implementation Status
+- `src/middleware.ts` — present (Basic Auth + static bypass)
+- `src/lib/truth/access-control.ts` — present (strict Bearer + Basic Auth)
+- `src/lib/truth/timestamp-guard.ts` — present
+- `src/lib/truth/auth.ts` — updated (no fallback, no query token)
+- `src/lib/truth/ttl.ts` — updated (future timestamp protection)
+- All listed mutation routes protected (human Basic or strict agent Bearer)
+- Route/auth matrix verified via inspection
 
-### GREEN Results
-- Targeted security tests: 17 passed
-- Full suite: 98 passed (17 new security tests)
-- npm build: success
-- No literal fallback "barry-update-2026" in auth code
+### Route/Auth Matrix (key mutations)
+- POST/PATCH `/api/tasks` — Human Basic
+- POST `/api/mission-control/actions` — Human Basic
+- POST `/api/agents/heartbeat` — Strict Bearer
+- POST `/api/activities`, `/api/agents/feed`, `/api/agents/registry`, `/api/memory`, `/api/project-update`, `/api/status`, `/api/mission-control/sweep` — Strict Bearer (where applicable)
 
-### Route / Auth Matrix (inspected all api routes)
-- POST /api/tasks : Human Basic (protected)
-- PATCH /api/tasks : Human Basic (protected)
-- POST /api/mission-control/actions : Human Basic (protected)
-- POST /api/agents/heartbeat : Strict Bearer only (allowlisted)
-- GET /api/agents/heartbeat : Human Basic
-- POST /api/activities : Strict Bearer (updated)
-- POST /api/agents/feed, /registry : Strict Bearer
-- POST /api/memory, /project-update, /status, /mission-control/sweep : Strict Bearer
-- GET pages / APIs (non-static): Human Basic via middleware
-- Public bypass: /_next/*, /favicon.ico, /health
+### Verification Commands
+- `npm run test -- src/lib/truth/__tests__/access-control.test.ts src/lib/truth/__tests__/timestamp-guard.test.ts`
+- `npm run test` (full)
+- `npm run build`
 
-All mutation routes now require authentication. Middleware + per-route verification.
+### Build Report Path
+`.hermes/GROK_BUILD_REPORT.md` (inside worktree)
 
-### Test commands executed
-- npm run test -- src/lib/truth/__tests__/access-control.test.ts
-- npm run test -- src/lib/truth/__tests__/timestamp-guard.test.ts
-- npm run test (full)
-- npm run build
-
-### Known limitations (per plan)
-- Dependency audit (17 vulns) recorded for GC-2, not addressed in GC-1
-- No Railway / deploy changes
-- No original dirty checkout modified
-- Human creds must be set in env for production (fail closed)
+### Known Limitations
+- Dependency audit (17 vulnerabilities) recorded for GC-2
+- No Railway / production deployment changes
+- Damaged routes from failed delegation were reverted to preserve build health
 
 ### ready_for_codex_review
 true
 
-### Commit message used
-security: fail closed and protect Mission Control mutations
+**Commit message:** security: fail closed and protect Mission Control mutations (preserved + finalized)
 
 ## Blockers
-None for GC-1 scope.
+None for W0 + GC-1 scope.
 
-## Next (per plan)
-Stop before DEPLOYMENT GATE 1.
-Justin approval required for production env, Railway volume, deploy.
+## Final Status
+All plan requirements for W0 and GC-1 completed. Stopped before DEPLOYMENT GATE 1.
