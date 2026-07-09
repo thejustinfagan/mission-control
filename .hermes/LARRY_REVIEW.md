@@ -1,11 +1,11 @@
 # Larry Independent Review — Mission Control GC-1
 
-**Reviewed:** 2026-07-09 15:50:21 CDT  
-**Branch:** `security/mission-control-truth-spine-v1`  
-**Base:** `0eede9a69604246eb19ff6b95e9c172f6533236f`  
-**Grok handoff HEAD:** `a80da7a7d2095d373620a69d07ded89c706360e9`  
-**Final reviewed commit:** local branch `HEAD` after the review patch commit  
-**Verdict:** `PATCHED_PASS_FOR_MERGE_REVIEW`  
+**Reviewed:** 2026-07-09 15:50:21 CDT
+**Branch:** `security/mission-control-truth-spine-v1`
+**Base:** `0eede9a69604246eb19ff6b95e9c172f6533236f`
+**Grok handoff HEAD:** `a80da7a7d2095d373620a69d07ded89c706360e9`
+**Final reviewed commit:** local branch `HEAD` after the review patch commit
+**Verdict:** `PATCHED_PASS_FOR_MERGE_REVIEW`
 **Deployment verdict:** `HUMAN_GATE_REQUIRED`
 
 ## Plain-English verdict

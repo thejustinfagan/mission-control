@@ -10,7 +10,7 @@ import { validateObservedAt, clampSlightlyFuture } from "./timestamp-guard";
  * Fresh requires: a parseable timestamp, a positive TTL, and an age that has
  * not exceeded the TTL. Missing data, non-positive TTL, or an expired age are
  * all NOT fresh. Unknown beats fake green.
- * 
+ *
  * SECURITY FIX (GC-1): Future timestamps beyond 5min skew are invalid.
  * Slightly future within skew is clamped to "just now".
  */
