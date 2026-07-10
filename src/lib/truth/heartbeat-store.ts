@@ -1,4 +1,5 @@
 import { getDb, getDbPath } from "@/lib/db/sqlite";
+import { clampSlightlyFuture, validateObservedAt } from "@/lib/truth/timestamp-guard";
 
 export interface AgentHeartbeatRecord {
   agentId: string;
@@ -50,9 +51,15 @@ export async function recordHeartbeat(
   if (!isKnownAgentId(input.agentId)) {
     throw new Error(`Unknown agentId: ${input.agentId}`);
   }
+  const now = new Date();
+  const observedAt = input.observedAt ?? now.toISOString();
+  if (!validateObservedAt(observedAt, now)) {
+    throw new Error(`Invalid observedAt: ${observedAt}`);
+  }
+
   const record: AgentHeartbeatRecord = {
     agentId: input.agentId,
-    observedAt: input.observedAt ?? new Date().toISOString(),
+    observedAt: clampSlightlyFuture(observedAt, now),
     ok: input.ok !== false,
     currentTask: input.currentTask,
     metadata: input.metadata,

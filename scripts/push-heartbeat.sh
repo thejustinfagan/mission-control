@@ -11,6 +11,11 @@ MC_URL="${MC_URL:-https://web-production-2c48a.up.railway.app}"
 AGENT_ID="${AGENT_ID:-barry}"
 CURRENT_TASK="${CURRENT_TASK:-Heartbeat check}"
 
+if [[ -z "${MC_AUTH_TOKEN:-}" ]]; then
+  echo "MC_AUTH_TOKEN is required; refusing to send an unauthenticated heartbeat." >&2
+  exit 1
+fi
+
 payload=$(cat <<EOF
 {
   "agentId": "${AGENT_ID}",
@@ -20,14 +25,9 @@ payload=$(cat <<EOF
 EOF
 )
 
-auth_args=()
-if [[ -n "${MC_AUTH_TOKEN:-}" ]]; then
-  auth_args=(-H "Authorization: Bearer ${MC_AUTH_TOKEN}")
-fi
-
 curl -sf -X POST "${MC_URL}/api/agents/heartbeat" \
   -H "Content-Type: application/json" \
-  "${auth_args[@]}" \
+  -H "Authorization: Bearer ${MC_AUTH_TOKEN}" \
   -d "${payload}"
 
 echo ""

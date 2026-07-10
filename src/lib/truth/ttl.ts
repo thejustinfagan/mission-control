@@ -2,6 +2,7 @@
 
 import type { Evidence, Freshness } from "./types";
 import { addSeconds, ageSeconds, toEpochMs } from "./time";
+import { validateObservedAt, clampSlightlyFuture } from "./timestamp-guard";
 
 /**
  * Is an observation still fresh?
@@ -9,6 +10,9 @@ import { addSeconds, ageSeconds, toEpochMs } from "./time";
  * Fresh requires: a parseable timestamp, a positive TTL, and an age that has
  * not exceeded the TTL. Missing data, non-positive TTL, or an expired age are
  * all NOT fresh. Unknown beats fake green.
+ *
+ * SECURITY FIX (GC-1): Future timestamps beyond 5min skew are invalid.
+ * Slightly future within skew is clamped to "just now".
  */
 export function isFresh(
   observedAt: string | null | undefined,
@@ -16,9 +20,16 @@ export function isFresh(
   now: Date = new Date()
 ): boolean {
   if (!observedAt || ttlSeconds == null || ttlSeconds <= 0) return false;
-  const age = ageSeconds(observedAt, now);
+  if (!validateObservedAt(observedAt, now)) return false;
+
+  let age = ageSeconds(observedAt, now);
   if (age === null) return false;
-  // A future-dated observation (negative age) is treated as fresh.
+
+  if (age < 0) {
+    observedAt = clampSlightlyFuture(observedAt, now);
+    age = ageSeconds(observedAt, now) ?? 0;
+  }
+
   return age <= ttlSeconds;
 }
 
@@ -38,7 +49,23 @@ export function computeFreshness(
     };
   }
 
-  const age = ageSeconds(observedAt, now);
+  if (!validateObservedAt(observedAt, now)) {
+    return {
+      state: "unknown",
+      observedAt,
+      ttlSeconds: ttlSeconds ?? null,
+      ageSeconds: null,
+      expiresAt: null,
+    };
+  }
+
+  let age = ageSeconds(observedAt, now);
+
+  if (age !== null && age < 0) {
+    observedAt = clampSlightlyFuture(observedAt, now);
+    age = ageSeconds(observedAt, now) ?? 0;
+  }
+
   const hasTtl = ttlSeconds != null && ttlSeconds > 0;
   const expiresAt = hasTtl ? addSeconds(observedAt, ttlSeconds as number) : null;
   const fresh = isFresh(observedAt, ttlSeconds, now);

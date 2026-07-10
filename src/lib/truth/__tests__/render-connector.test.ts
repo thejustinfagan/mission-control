@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { renderProbeConnector } from "../connectors/render";
+import { DEFAULT_RENDER_TARGETS, renderProbeConnector } from "../connectors/render";
 
 const NOW = new Date("2026-06-19T12:00:00Z");
 const TARGET = [
@@ -39,5 +39,11 @@ describe("renderProbeConnector", () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("timeout"); }));
     const r = await renderProbeConnector(NOW, TARGET);
     expect(r.evidence[0].ok).toBeNull();
+  });
+
+  it("uses public health for Mission Control's default render probe", () => {
+    const mc = DEFAULT_RENDER_TARGETS.find((t) => t.projectId === "mission-control");
+    expect(mc?.url).toContain("/api/health");
+    expect(mc?.url).not.toContain("/api/status");
   });
 });

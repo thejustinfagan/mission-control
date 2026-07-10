@@ -10,7 +10,7 @@ export const revalidate = 0;
 
 /**
  * GET — latest sweep; ?force=true regenerates; ?history=N returns past sweeps
- * POST — cron trigger (requires MC_AUTH_TOKEN when set)
+ * POST — cron trigger (requires strict Bearer MC_AUTH_TOKEN)
  */
 export async function GET(request: NextRequest) {
   const historyParam = request.nextUrl.searchParams.get("history");

@@ -18,6 +18,11 @@ REGISTRY_STATUS=""
 REGISTRY_LAST_WORKED=""
 REGISTRY_BLOCKERS=""
 
+if [[ -z "${MC_AUTH_TOKEN:-}" ]]; then
+  echo "MC_AUTH_TOKEN is required; refusing to send an unauthenticated feed update." >&2
+  exit 1
+fi
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --task) TASK="$2"; shift 2 ;;
@@ -33,11 +38,6 @@ done
 
 if [[ -z "$TASK" ]]; then
   TASK="Heartbeat check"
-fi
-
-auth_args=()
-if [[ -n "${MC_AUTH_TOKEN:-}" ]]; then
-  auth_args=(-H "Authorization: Bearer ${MC_AUTH_TOKEN}")
 fi
 
 registry_json="[]"
@@ -87,7 +87,7 @@ EOF
 
 curl -sf -X POST "${MC_URL}/api/agents/feed" \
   -H "Content-Type: application/json" \
-  "${auth_args[@]}" \
+  -H "Authorization: Bearer ${MC_AUTH_TOKEN}" \
   -d "$payload"
 
 echo ""

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { verifyAgentAuth, unauthorizedResponse } from "@/lib/truth/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const STATUS_FILE = path.join("/tmp", "mission-control-status.json");
-const AUTH_TOKEN = process.env.MC_AUTH_TOKEN || "barry-update-2026";
 
 function readStatus(): any | null {
   try {
@@ -44,12 +44,7 @@ function normalizeProjectName(name: string): string {
 }
 
 export async function POST(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  const token = authHeader?.replace("Bearer ", "");
-
-  if (token !== AUTH_TOKEN) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!verifyAgentAuth(request)) return unauthorizedResponse();
 
   try {
     const body = await request.json();

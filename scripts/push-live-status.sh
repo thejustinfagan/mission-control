@@ -5,7 +5,11 @@ set -euo pipefail
 BEAST_MODE_DIR="${BEAST_MODE_DIR:-$HOME/projects/beast-mode}"
 PROJECTS_DIR="${PROJECTS_DIR:-$HOME/projects}"
 MC_URL="${MC_URL:-https://web-production-2c48a.up.railway.app}"
-MC_TOKEN="${MC_TOKEN:-barry-update-2026}"
+
+if [[ -z "${MC_AUTH_TOKEN:-}" ]]; then
+  echo "MC_AUTH_TOKEN is required; refusing to use a fallback token." >&2
+  exit 1
+fi
 
 TMPDIR_WORK=$(mktemp -d)
 trap 'rm -rf "$TMPDIR_WORK"' EXIT
@@ -187,15 +191,14 @@ echo "Pushing live status to $MC_URL..."
 HTTP_CODE=$(curl -s -o /dev/null -w '%{http_code}' \
   -X POST "$MC_URL/api/status" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ${MC_AUTH_TOKEN:-$MC_TOKEN}" \
+  -H "Authorization: Bearer ${MC_AUTH_TOKEN}" \
   -d @"$PAYLOAD_FILE")
 
 if [ "$HTTP_CODE" = "200" ]; then
   echo "✅ Status pushed successfully (HTTP $HTTP_CODE)"
   # Also feed heartbeat + activity via unified feed API
   if [ -x "$(dirname "$0")/barry-feed-mc.sh" ]; then
-    MC_AUTH_TOKEN="${MC_AUTH_TOKEN:-$MC_TOKEN}" \
-      "$(dirname "$0")/barry-feed-mc.sh" \
+    "$(dirname "$0")/barry-feed-mc.sh" \
       --heartbeat-only \
       --task "Live status push from git scan" \
       --project mission-control || true

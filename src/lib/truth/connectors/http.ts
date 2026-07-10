@@ -27,15 +27,13 @@ const PROBE_TTL_SECONDS = 300; // a reachability check is fresh for 5 minutes
 const PROBE_TIMEOUT_MS = 4000;
 
 // Default reachability targets, used when MC_PROBE_URLS is not configured.
-// NOTE: we probe Mission Control's own deployment via /api/status (a cheap JSON
-// route) rather than its root — the root rebuilds the snapshot, which would
-// recurse. /api/status does not, so this is a safe "is the Railway app serving"
-// check. Public URL, no credentials.
+// NOTE: Mission Control read APIs are private. Probe only the narrow public
+// health endpoint, not status data.
 export const DEFAULT_PROBE_TARGETS: HttpProbeTarget[] = [
   {
     projectId: "mission-control",
-    label: "Mission Control on Railway (/api/status)",
-    url: "https://web-production-2c48a.up.railway.app/api/status",
+    label: "Mission Control on Railway (/api/health)",
+    url: "https://web-production-2c48a.up.railway.app/api/health",
   },
 ];
 
@@ -60,10 +58,10 @@ export function registryProbeTargets(
     let url = project.liveUrl;
     let label = `${project.name} live URL`;
 
-    // Mission Control root rebuilds the snapshot — probe /api/status instead.
+    // Mission Control read APIs are private; use the public health endpoint.
     if (project.id === "mission-control") {
-      url = url.replace(/\/?$/, "/api/status");
-      label = "Mission Control on Railway (/api/status)";
+      url = url.replace(/\/?$/, "/api/health");
+      label = "Mission Control on Railway (/api/health)";
     }
 
     targets.push({ projectId: project.id, label, url });
